@@ -12,15 +12,30 @@ http://localhost:8080/api/v1
 
 ### 1. Hello Endpoint
 
-**GET** `/hello`
+**POST** `/hello`
 
-Returns a greeting message with sample data.
+Accepts a request with items containing IDs and returns a greeting message with processed IDs.
+
+#### Request Body
+
+```json
+{
+  "request": [
+    {
+      "id": "3123"
+    },
+    {
+      "id": "4567"
+    }
+  ]
+}
+```
 
 #### Response
 
 ```json
 {
-  "message": "Hello from Sandbox Service! 🚀",
+  "message": "Hello from Sandbox Service! 🚀 Processed IDs: [3123, 4567]",
   "timestamp": "2024-01-01T12:00:00.000Z",
   "service": "sandbox-service"
 }
@@ -29,7 +44,14 @@ Returns a greeting message with sample data.
 #### Example Usage
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/hello
+curl -X POST http://localhost:8080/api/v1/hello \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": [
+      {"id": "3123"},
+      {"id": "4567"}
+    ]
+  }'
 ```
 
 ### 2. Health Check Endpoint

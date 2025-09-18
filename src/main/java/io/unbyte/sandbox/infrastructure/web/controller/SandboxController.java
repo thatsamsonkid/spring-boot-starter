@@ -1,11 +1,12 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
+import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,28 +24,37 @@ public class SandboxController {
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     /**
-     * Hello endpoint - returns sample data
-     * @return HelloResponse with greeting message
+     * Hello endpoint - accepts POST request with request items
+     * @param request the request containing items with IDs
+     * @return Mono<HelloResponse> with greeting message and processed IDs
      */
-    @GetMapping("/hello")
-    public ResponseEntity<HelloResponse> hello() {
+    @PostMapping(value = "/hello", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<HelloResponse> hello(@Valid @RequestBody HelloRequest request) {
         String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
         
+        // Process the request items
+        String processedIds = request.getRequest().stream()
+                .map(HelloRequest.RequestItem::getId)
+                .reduce((id1, id2) -> id1 + ", " + id2)
+                .orElse("none");
+        
+        String message = String.format("Hello from Sandbox Service! 🚀 Processed IDs: [%s]", processedIds);
+        
         HelloResponse response = new HelloResponse(
-            "Hello from Sandbox Service! 🚀",
+            message,
             timestamp,
             SERVICE_NAME
         );
         
-        return ResponseEntity.ok(response);
+        return Mono.just(response);
     }
 
     /**
      * Health check endpoint - returns service health status
-     * @return HealthResponse with service health information
+     * @return Mono<HealthResponse> with service health information
      */
-    @GetMapping("/health")
-    public ResponseEntity<HealthResponse> health() {
+    @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<HealthResponse> health() {
         String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
         
         HealthResponse response = new HealthResponse(
@@ -54,6 +64,6 @@ public class SandboxController {
             SERVICE_VERSION
         );
         
-        return ResponseEntity.ok(response);
+        return Mono.just(response);
     }
 }
