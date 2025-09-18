@@ -1,10 +1,15 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
+import io.unbyte.sandbox.domain.exception.DomainException;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
+import io.unbyte.sandbox.infrastructure.web.service.ErrorTrackingService;
 import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
+import io.unbyte.sandbox.shared.exception.ErrorCode;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -29,9 +34,12 @@ public class SandboxController {
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
     private final PerformanceMonitoringService performanceMonitoringService;
+    private final ErrorTrackingService errorTrackingService;
 
-    public SandboxController(PerformanceMonitoringService performanceMonitoringService) {
+    public SandboxController(PerformanceMonitoringService performanceMonitoringService, 
+                           ErrorTrackingService errorTrackingService) {
         this.performanceMonitoringService = performanceMonitoringService;
+        this.errorTrackingService = errorTrackingService;
     }
 
     /**
@@ -96,6 +104,46 @@ public class SandboxController {
                 logger.info("Health check completed successfully");
                 
                 return response;
+            })
+        );
+    }
+
+    /**
+     * Test endpoint to demonstrate error handling
+     * @param errorType the type of error to simulate
+     * @return Mono<HelloResponse> or throws exception
+     */
+    @GetMapping(value = "/test-error", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<HelloResponse> testError(@RequestParam String errorType) {
+        return performanceMonitoringService.monitorOperation("test_error_endpoint",
+            Mono.fromCallable(() -> {
+                String correlationId = MDC.get("correlationId");
+                String userId = MDC.get("userId");
+                
+                logger.info("Testing error type: {} with correlation ID: {}", errorType, correlationId);
+                
+                switch (errorType.toLowerCase()) {
+                    case "domain_validation":
+                        throw DomainException.validationFailed("testField", "Test validation error");
+                    case "domain_entity_not_found":
+                        throw DomainException.entityNotFound("TestEntity", "test-id-123");
+                    case "domain_business_rule":
+                        throw DomainException.businessRuleViolation("TestRule", "Business rule violation");
+                    case "application_use_case":
+                        throw new io.unbyte.sandbox.application.exception.ApplicationServiceException(
+                            ErrorCode.APPLICATION_USE_CASE_FAILED,
+                            "Test use case failed"
+                        );
+                    case "infrastructure_database":
+                        throw new io.unbyte.sandbox.application.exception.ApplicationServiceException(
+                            ErrorCode.INFRASTRUCTURE_DATABASE_ERROR,
+                            "Test database error"
+                        );
+                    case "system_internal":
+                        throw new RuntimeException("Test system error");
+                    default:
+                        throw new IllegalArgumentException("Unknown error type: " + errorType);
+                }
             })
         );
     }

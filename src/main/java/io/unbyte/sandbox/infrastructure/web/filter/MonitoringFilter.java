@@ -53,21 +53,34 @@ public class MonitoringFilter implements WebFilter, Ordered {
         
         return chain.filter(exchange)
             .doOnSuccess(aVoid -> {
-                // Record successful request
+                // Check if the response indicates an error based on status code
+                boolean isError = response.getStatusCode() != null && 
+                    response.getStatusCode().isError();
+                
                 Duration duration = Duration.between(startTime, Instant.now());
                 
                 Timer.Sample sample = Timer.start(meterRegistry);
                 sample.stop(Timer.builder("sandbox.requests.duration")
                     .tag("endpoint", endpoint)
                     .tag("method", method)
-                    .tag("status", "success")
+                    .tag("status", isError ? "error" : "success")
                     .tag("service", "sandbox")
                     .register(meterRegistry));
                 
-                metricsConfig.recordRequest(endpoint, method, true);
-                
-                logger.info("Request completed successfully: {} {} in {}ms with correlation ID: {}", 
-                    method, endpoint, duration.toMillis(), correlationId);
+                if (isError) {
+                    // Record failed request
+                    metricsConfig.recordRequest(endpoint, method, false);
+                    metricsConfig.recordError(endpoint, "HttpError", "HTTP " + response.getStatusCode().value());
+                    
+                    logger.error("Request failed with HTTP error: {} {} in {}ms with correlation ID: {} - Status: {}", 
+                        method, endpoint, duration.toMillis(), correlationId, response.getStatusCode());
+                } else {
+                    // Record successful request
+                    metricsConfig.recordRequest(endpoint, method, true);
+                    
+                    logger.info("Request completed successfully: {} {} in {}ms with correlation ID: {}", 
+                        method, endpoint, duration.toMillis(), correlationId);
+                }
             })
             .doOnError(throwable -> {
                 // Record failed request
