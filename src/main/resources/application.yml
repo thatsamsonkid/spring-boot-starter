@@ -1,0 +1,46 @@
+# Application configuration
+spring:
+  application:
+    name: sandbox-service
+
+# Actuator configuration for metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: sandbox-service
+      environment: development
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        sandbox.requests.duration: true
+        sandbox.operations.duration: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+        sandbox.requests.duration: 0.5, 0.95, 0.99
+        sandbox.operations.duration: 0.5, 0.95, 0.99
+
+# Logging configuration
+logging:
+  level:
+    io.unbyte.sandbox: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] [%X{userId}] %logger{36} - %msg%n"
+
+# Server configuration
+server:
+  port: 8080

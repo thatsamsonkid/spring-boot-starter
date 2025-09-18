@@ -3,6 +3,7 @@ package io.unbyte.sandbox.infrastructure.web.controller;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
+import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,12 @@ public class SandboxController {
     private static final String SERVICE_NAME = "sandbox-service";
     private static final String SERVICE_VERSION = "1.0.0";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    
+    private final PerformanceMonitoringService performanceMonitoringService;
+
+    public SandboxController(PerformanceMonitoringService performanceMonitoringService) {
+        this.performanceMonitoringService = performanceMonitoringService;
+    }
 
     /**
      * Hello endpoint - accepts POST request with request items
@@ -34,33 +41,34 @@ public class SandboxController {
      */
     @PostMapping(value = "/hello", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HelloResponse> hello(@Valid @RequestBody HelloRequest request) {
-        return Mono.fromCallable(() -> {
-            // Context is automatically available in MDC due to the MDC bridge
-            String correlationId = MDC.get("correlationId");
-            String userId = MDC.get("userId");
-            
-            logger.info("Processing hello request with correlation ID: {}", correlationId);
-            logger.info("Processing request for user: {}", userId);
-            
-            String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-            
-            // Process the request items
-            String processedIds = request.getRequest().stream()
-                    .map(HelloRequest.RequestItem::getId)
-                    .reduce((id1, id2) -> id1 + ", " + id2)
-                    .orElse("none");
-            
-            String message = String.format("Hello from Sandbox Service! 🚀 Processed IDs: [%s]", processedIds);
-            
-            logger.info("Hello response created successfully");
-            
-            return new HelloResponse(
-                message,
-                timestamp,
-                SERVICE_NAME
-            );
-        })
-        .doOnError(error -> logger.error("Error processing hello request", error));
+        return performanceMonitoringService.monitorOperation("hello_endpoint", 
+            Mono.fromCallable(() -> {
+                // Context is automatically available in MDC due to the MDC bridge
+                String correlationId = MDC.get("correlationId");
+                String userId = MDC.get("userId");
+                
+                logger.info("Processing hello request with correlation ID: {}", correlationId);
+                logger.info("Processing request for user: {}", userId);
+                
+                String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+                
+                // Process the request items
+                String processedIds = request.getRequest().stream()
+                        .map(HelloRequest.RequestItem::getId)
+                        .reduce((id1, id2) -> id1 + ", " + id2)
+                        .orElse("none");
+                
+                String message = String.format("Hello from Sandbox Service! 🚀 Processed IDs: [%s]", processedIds);
+                
+                logger.info("Hello response created successfully");
+                
+                return new HelloResponse(
+                    message,
+                    timestamp,
+                    SERVICE_NAME
+                );
+            })
+        );
     }
 
     /**
@@ -69,25 +77,26 @@ public class SandboxController {
      */
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HealthResponse> health() {
-        return Mono.fromCallable(() -> {
-            // Context is automatically available in MDC due to the MDC bridge
-            String correlationId = MDC.get("correlationId");
-            
-            logger.info("Health check requested with correlation ID: {}", correlationId);
-            
-            String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-            
-            HealthResponse response = new HealthResponse(
-                "UP",
-                timestamp,
-                SERVICE_NAME,
-                SERVICE_VERSION
-            );
-            
-            logger.info("Health check completed successfully");
-            
-            return response;
-        })
-        .doOnError(error -> logger.error("Error during health check", error));
+        return performanceMonitoringService.monitorOperation("health_endpoint",
+            Mono.fromCallable(() -> {
+                // Context is automatically available in MDC due to the MDC bridge
+                String correlationId = MDC.get("correlationId");
+                
+                logger.info("Health check requested with correlation ID: {}", correlationId);
+                
+                String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+                
+                HealthResponse response = new HealthResponse(
+                    "UP",
+                    timestamp,
+                    SERVICE_NAME,
+                    SERVICE_VERSION
+                );
+                
+                logger.info("Health check completed successfully");
+                
+                return response;
+            })
+        );
     }
 }
