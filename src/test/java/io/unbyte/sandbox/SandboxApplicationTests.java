@@ -1,4 +1,4 @@
-package io.unbyte.sandbox.application;
+package io.unbyte.sandbox;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
