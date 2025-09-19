@@ -6,13 +6,13 @@ import io.unbyte.sandbox.domain.exception.DomainException;
 import io.unbyte.sandbox.shared.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 /**
  * Use case for testing error scenarios
  * Contains the business logic for error testing
+ * 
+ * This class is framework-agnostic and should not have Spring annotations.
+ * Dependency injection is handled by the infrastructure layer.
  */
-@Component
 public class TestErrorUseCase {
     
     private static final Logger logger = LoggerFactory.getLogger(TestErrorUseCase.class);

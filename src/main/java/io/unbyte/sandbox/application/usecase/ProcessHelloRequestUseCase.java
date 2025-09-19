@@ -5,16 +5,16 @@ import io.unbyte.sandbox.application.exception.ApplicationServiceException;
 import io.unbyte.sandbox.shared.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * Use case for processing hello requests
  * Contains the business logic for processing hello requests
+ * 
+ * This class is framework-agnostic and should not have Spring annotations.
+ * Dependency injection is handled by the infrastructure layer.
  */
-@Component
 public class ProcessHelloRequestUseCase {
     
     private static final Logger logger = LoggerFactory.getLogger(ProcessHelloRequestUseCase.class);

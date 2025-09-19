@@ -72,6 +72,99 @@ public class HexagonalArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage(INFRASTRUCTURE);
 
     /**
+     * Application layer must be framework-agnostic - no reactive types in use cases
+     * Exception: Port interfaces can use reactive types for non-blocking behavior
+     */
+    @ArchTest
+    static final ArchRule applicationUseCasesShouldNotDependOnReactiveTypes = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage("..application.usecase..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "reactor.core..",
+                    "reactor.util..",
+                    "org.reactivestreams..");
+
+    /**
+     * Application layer must be framework-agnostic - no Spring WebFlux
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnWebFlux = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.springframework.web.reactive..",
+                    "org.springframework.web.reactive.function..");
+
+    /**
+     * Application layer must be framework-agnostic - no Spring annotations
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotHaveSpringAnnotations = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().beAnnotatedWith(org.springframework.stereotype.Component.class)
+            .orShould().beAnnotatedWith(org.springframework.stereotype.Service.class)
+            .orShould().beAnnotatedWith(org.springframework.beans.factory.annotation.Autowired.class)
+            .orShould().beAnnotatedWith(org.springframework.context.annotation.Configuration.class);
+
+    /**
+     * Application layer must be framework-agnostic - no Jackson annotations
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnJackson = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "com.fasterxml.jackson..");
+
+    /**
+     * Application layer must be framework-agnostic - no validation annotations
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnValidation = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "jakarta.validation..",
+                    "javax.validation..");
+
+    /**
+     * Application layer must be framework-agnostic - no persistence annotations
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnPersistence = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "jakarta.persistence..",
+                    "javax.persistence..",
+                    "org.hibernate..");
+
+    /**
+     * Application layer must be framework-agnostic - no HTTP annotations
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnHttp = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.springframework.web..",
+                    "org.springframework.http..",
+                    "jakarta.servlet..",
+                    "javax.servlet..");
+
+    /**
+     * Application layer must be framework-agnostic - no Micrometer
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnMicrometer = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "io.micrometer..");
+
+    /**
+     * Application layer must be framework-agnostic - no MapStruct
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnMapStruct = ArchRuleDefinition.noClasses()
+            .that().resideInAPackage(APPLICATION)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "org.mapstruct..");
+
+    /**
      * Controllers may only depend on application + domain + shared (not persistence/entities directly)
      */
     @ArchTest
@@ -86,6 +179,7 @@ public class HexagonalArchitectureTest {
                     "org.springframework.context..",
                     "org.springframework.core..",
                     "org.springframework.stereotype..",
+                    "org.springframework.beans.factory.annotation..", // Added for @Autowired
                     "com.fasterxml.jackson..",
                     "io.micrometer.core.instrument..",
                     "reactor.core..",
@@ -93,6 +187,7 @@ public class HexagonalArchitectureTest {
                     "org.reactivestreams..",
                     "org.slf4j..",
                     "jakarta.annotation..",
+                    "org.mapstruct..", // Added for MapStruct mappers
                     DOMAIN, 
                     APPLICATION, 
                     WEB, 

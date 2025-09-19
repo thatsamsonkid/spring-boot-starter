@@ -1,14 +1,19 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
+import io.unbyte.sandbox.application.command.FetchPostsCommand;
 import io.unbyte.sandbox.application.command.ProcessHelloCommand;
 import io.unbyte.sandbox.application.command.TestErrorCommand;
+import io.unbyte.sandbox.infrastructure.web.usecase.ReactiveFetchPostsUseCase;
 import io.unbyte.sandbox.application.usecase.GetHealthStatusUseCase;
 import io.unbyte.sandbox.application.usecase.ProcessHelloRequestUseCase;
 import io.unbyte.sandbox.application.usecase.TestErrorUseCase;
+import io.unbyte.sandbox.infrastructure.web.mapper.PostMapper;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
+import io.unbyte.sandbox.infrastructure.web.request.PostsRequestDto;
 import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
+import io.unbyte.sandbox.infrastructure.web.response.PostsResponseDto;
 import io.unbyte.sandbox.infrastructure.web.service.ErrorTrackingService;
 import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
 import jakarta.validation.Valid;
@@ -20,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 
 /**
  * REST Controller for Sandbox application
@@ -36,17 +42,23 @@ public class SandboxController {
     private final ProcessHelloRequestUseCase processHelloRequestUseCase;
     private final GetHealthStatusUseCase getHealthStatusUseCase;
     private final TestErrorUseCase testErrorUseCase;
+    private final ReactiveFetchPostsUseCase fetchPostsUseCase;
+    private final PostMapper postMapper;
 
     public SandboxController(PerformanceMonitoringService performanceMonitoringService, 
                            ErrorTrackingService errorTrackingService,
                            ProcessHelloRequestUseCase processHelloRequestUseCase,
                            GetHealthStatusUseCase getHealthStatusUseCase,
-                           TestErrorUseCase testErrorUseCase) {
+                           TestErrorUseCase testErrorUseCase,
+                           ReactiveFetchPostsUseCase fetchPostsUseCase,
+                           PostMapper postMapper) {
         this.performanceMonitoringService = performanceMonitoringService;
         this.errorTrackingService = errorTrackingService;
         this.processHelloRequestUseCase = processHelloRequestUseCase;
         this.getHealthStatusUseCase = getHealthStatusUseCase;
         this.testErrorUseCase = testErrorUseCase;
+        this.fetchPostsUseCase = fetchPostsUseCase;
+        this.postMapper = postMapper;
     }
 
     /**
@@ -134,6 +146,53 @@ public class SandboxController {
                 
                 // This line will never be reached as testError always throws an exception
                 return null;
+            })
+        );
+    }
+
+    /**
+     * Fetch posts with comments from external API
+     * @param request the request containing post IDs
+     * @return Mono<PostsResponseDto> with posts and their comments
+     */
+    @PostMapping(value = "/posts", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<PostsResponseDto> fetchPosts(@Valid @RequestBody PostsRequestDto request) {
+        return performanceMonitoringService.monitorOperation("fetch_posts_endpoint", 
+            Mono.fromCallable(() -> {
+                // Context is automatically available in MDC due to the MDC bridge
+                String correlationId = MDC.get("correlationId");
+                String userId = MDC.get("userId");
+                
+                logger.info("Fetching posts with correlation ID: {}", correlationId);
+                logger.info("Processing request for user: {}", userId);
+                
+                // Convert DTO to Command
+                List<String> postIds = request.getRequest().stream()
+                        .map(io.unbyte.sandbox.infrastructure.web.request.PostRequestDto::postId)
+                        .toList();
+                
+                FetchPostsCommand command = new FetchPostsCommand(postIds);
+                
+                logger.info("Created command with {} post IDs", command.getPostCount());
+                
+                return command;
+            })
+            .flatMap(command -> {
+                // Use reactive use case directly
+                return fetchPostsUseCase.fetchPostsWithComments(command.postIds());
+            })
+            .map(posts -> {
+                // Convert domain posts to response DTOs
+                List<io.unbyte.sandbox.infrastructure.web.response.PostResponseDto> postDtos = posts.stream()
+                        .map(postMapper::toResponseDto)
+                        .toList();
+                
+                PostsResponseDto.DataDto data = new PostsResponseDto.DataDto(postDtos);
+                PostsResponseDto response = new PostsResponseDto(data);
+                
+                logger.info("Successfully fetched {} posts with comments", posts.size());
+                
+                return response;
             })
         );
     }
