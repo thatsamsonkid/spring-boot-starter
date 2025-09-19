@@ -1,6 +1,7 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
+import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -24,8 +25,8 @@ class ContextPropagationTest {
     @Test
     void helloEndpoint_shouldPropagateContext() {
         // Create test request
-        HelloRequest.RequestItem item1 = new HelloRequest.RequestItem("3123");
-        HelloRequest.RequestItem item2 = new HelloRequest.RequestItem("4567");
+        RequestItemRecord item1 = new RequestItemRecord("3123");
+        RequestItemRecord item2 = new RequestItemRecord("4567");
         HelloRequest request = new HelloRequest(Arrays.asList(item1, item2));
         
         webTestClient
@@ -66,7 +67,7 @@ class ContextPropagationTest {
     @Test
     void helloEndpoint_shouldGenerateCorrelationIdWhenMissing() {
         // Create test request without correlation ID header
-        HelloRequest.RequestItem item1 = new HelloRequest.RequestItem("3123");
+        RequestItemRecord item1 = new RequestItemRecord("3123");
         HelloRequest request = new HelloRequest(Arrays.asList(item1));
         
         webTestClient

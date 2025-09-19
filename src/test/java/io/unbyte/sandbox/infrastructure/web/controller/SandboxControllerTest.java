@@ -1,6 +1,7 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
+import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
 import org.junit.jupiter.api.Test;
@@ -27,8 +28,8 @@ class SandboxControllerTest {
     @Test
     void helloEndpoint_shouldReturnHelloResponse() {
         // Create test request
-        HelloRequest.RequestItem item1 = new HelloRequest.RequestItem("3123");
-        HelloRequest.RequestItem item2 = new HelloRequest.RequestItem("4567");
+        RequestItemRecord item1 = new RequestItemRecord("3123");
+        RequestItemRecord item2 = new RequestItemRecord("4567");
         HelloRequest request = new HelloRequest(Arrays.asList(item1, item2));
         
         webTestClient
@@ -42,11 +43,11 @@ class SandboxControllerTest {
             .expectHeader().contentType(APPLICATION_JSON)
             .expectBody(HelloResponse.class)
             .value(response -> {
-                assert response.getMessage().contains("Hello from Sandbox Service");
-                assert response.getMessage().contains("3123");
-                assert response.getMessage().contains("4567");
-                assert response.getService().equals("sandbox-service");
-                assert response.getTimestamp() != null;
+                assert response.message().contains("Hello from Sandbox Service");
+                assert response.message().contains("3123");
+                assert response.message().contains("4567");
+                assert response.service().equals("sandbox-service");
+                assert response.timestamp() != null;
             });
     }
 
@@ -61,10 +62,10 @@ class SandboxControllerTest {
             .expectHeader().contentType(APPLICATION_JSON)
             .expectBody(HealthResponse.class)
             .value(response -> {
-                assert response.getStatus().equals("UP");
-                assert response.getService().equals("sandbox-service");
-                assert response.getVersion().equals("1.0.0");
-                assert response.getTimestamp() != null;
+                assert response.status().equals("UP");
+                assert response.service().equals("sandbox-service");
+                assert response.version().equals("1.0.0");
+                assert response.timestamp() != null;
             });
     }
 }

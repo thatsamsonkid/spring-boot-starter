@@ -2,6 +2,7 @@ package io.unbyte.sandbox.infrastructure.web.controller;
 
 import io.unbyte.sandbox.domain.exception.DomainException;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
+import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
 import io.unbyte.sandbox.infrastructure.web.service.ErrorTrackingService;
@@ -62,7 +63,7 @@ public class SandboxController {
                 
                 // Process the request items
                 String processedIds = request.getRequest().stream()
-                        .map(HelloRequest.RequestItem::getId)
+                        .map(RequestItemRecord::id)
                         .reduce((id1, id2) -> id1 + ", " + id2)
                         .orElse("none");
                 

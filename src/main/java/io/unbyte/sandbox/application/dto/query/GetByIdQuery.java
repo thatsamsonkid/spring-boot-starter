@@ -3,23 +3,19 @@ package io.unbyte.sandbox.application.dto.query;
 import java.util.UUID;
 
 /**
- * Query DTO for application layer
+ * Query DTO for application layer using Java Record
  * Represents a data retrieval operation
  */
-public class GetByIdQuery {
-    private UUID id;
-
-    public GetByIdQuery() {}
-
-    public GetByIdQuery(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
+public record GetByIdQuery(
+    UUID id
+) {
+    
+    /**
+     * Compact constructor for validation
+     */
+    public GetByIdQuery {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
     }
 }

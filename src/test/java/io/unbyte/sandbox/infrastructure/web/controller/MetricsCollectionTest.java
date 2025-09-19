@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
+import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -32,8 +33,8 @@ class MetricsCollectionTest {
     @Test
     void helloEndpoint_shouldRecordMetrics() {
         // Create test request
-        HelloRequest.RequestItem item1 = new HelloRequest.RequestItem("3123");
-        HelloRequest.RequestItem item2 = new HelloRequest.RequestItem("4567");
+        RequestItemRecord item1 = new RequestItemRecord("3123");
+        RequestItemRecord item2 = new RequestItemRecord("4567");
         HelloRequest request = new HelloRequest(Arrays.asList(item1, item2));
         
         // Get initial counter values with correct tags

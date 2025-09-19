@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * Request DTO for /hello endpoint
+ * Updated to use RequestItemRecord instead of inner class
  */
 public class HelloRequest {
     
@@ -16,43 +17,19 @@ public class HelloRequest {
     @NotNull(message = "Request cannot be null")
     @NotEmpty(message = "Request cannot be empty")
     @Valid
-    private List<RequestItem> request;
+    private List<RequestItemRecord> request;
 
     public HelloRequest() {}
 
-    public HelloRequest(List<RequestItem> request) {
+    public HelloRequest(List<RequestItemRecord> request) {
         this.request = request;
     }
 
-    public List<RequestItem> getRequest() {
+    public List<RequestItemRecord> getRequest() {
         return request;
     }
 
-    public void setRequest(List<RequestItem> request) {
+    public void setRequest(List<RequestItemRecord> request) {
         this.request = request;
-    }
-
-    /**
-     * Inner class for request items
-     */
-    public static class RequestItem {
-        
-        @JsonProperty("id")
-        @NotNull(message = "ID cannot be null")
-        private String id;
-
-        public RequestItem() {}
-
-        public RequestItem(String id) {
-            this.id = id;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
     }
 }

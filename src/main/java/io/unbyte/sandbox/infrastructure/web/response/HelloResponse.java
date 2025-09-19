@@ -3,48 +3,35 @@ package io.unbyte.sandbox.infrastructure.web.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Response DTO for /hello endpoint
+ * Response DTO for /hello endpoint using Java Record
+ * 
+ * Records work perfectly with Jackson annotations
  */
-public class HelloResponse {
+public record HelloResponse(
+    @JsonProperty("message") String message,
+    @JsonProperty("timestamp") String timestamp,
+    @JsonProperty("service") String service
+) {
     
-    @JsonProperty("message")
-    private String message;
+    /**
+     * Compact constructor for validation
+     */
+    public HelloResponse {
+        if (message == null || message.trim().isEmpty()) {
+            throw new IllegalArgumentException("Message cannot be null or empty");
+        }
+        if (timestamp == null || timestamp.trim().isEmpty()) {
+            throw new IllegalArgumentException("Timestamp cannot be null or empty");
+        }
+        if (service == null || service.trim().isEmpty()) {
+            throw new IllegalArgumentException("Service cannot be null or empty");
+        }
+    }
     
-    @JsonProperty("timestamp")
-    private String timestamp;
-    
-    @JsonProperty("service")
-    private String service;
-
-    public HelloResponse() {}
-
-    public HelloResponse(String message, String timestamp, String service) {
-        this.message = message;
-        this.timestamp = timestamp;
-        this.service = service;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
+    /**
+     * Factory method for common use cases
+     */
+    public static HelloResponse success(String message, String timestamp) {
+        return new HelloResponse(message, timestamp, "sandbox");
     }
 }
