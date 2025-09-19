@@ -1,15 +1,17 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
-import io.unbyte.sandbox.domain.exception.DomainException;
+import io.unbyte.sandbox.application.command.ProcessHelloCommand;
+import io.unbyte.sandbox.application.command.TestErrorCommand;
+import io.unbyte.sandbox.application.usecase.GetHealthStatusUseCase;
+import io.unbyte.sandbox.application.usecase.ProcessHelloRequestUseCase;
+import io.unbyte.sandbox.application.usecase.TestErrorUseCase;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
 import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
 import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
 import io.unbyte.sandbox.infrastructure.web.service.ErrorTrackingService;
 import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
-import io.unbyte.sandbox.shared.exception.ErrorCode;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * REST Controller for Sandbox application
@@ -30,17 +30,23 @@ import java.time.format.DateTimeFormatter;
 public class SandboxController {
 
     private static final Logger logger = LoggerFactory.getLogger(SandboxController.class);
-    private static final String SERVICE_NAME = "sandbox-service";
-    private static final String SERVICE_VERSION = "1.0.0";
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     
     private final PerformanceMonitoringService performanceMonitoringService;
     private final ErrorTrackingService errorTrackingService;
+    private final ProcessHelloRequestUseCase processHelloRequestUseCase;
+    private final GetHealthStatusUseCase getHealthStatusUseCase;
+    private final TestErrorUseCase testErrorUseCase;
 
     public SandboxController(PerformanceMonitoringService performanceMonitoringService, 
-                           ErrorTrackingService errorTrackingService) {
+                           ErrorTrackingService errorTrackingService,
+                           ProcessHelloRequestUseCase processHelloRequestUseCase,
+                           GetHealthStatusUseCase getHealthStatusUseCase,
+                           TestErrorUseCase testErrorUseCase) {
         this.performanceMonitoringService = performanceMonitoringService;
         this.errorTrackingService = errorTrackingService;
+        this.processHelloRequestUseCase = processHelloRequestUseCase;
+        this.getHealthStatusUseCase = getHealthStatusUseCase;
+        this.testErrorUseCase = testErrorUseCase;
     }
 
     /**
@@ -59,23 +65,21 @@ public class SandboxController {
                 logger.info("Processing hello request with correlation ID: {}", correlationId);
                 logger.info("Processing request for user: {}", userId);
                 
-                String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
-                
-                // Process the request items
-                String processedIds = request.getRequest().stream()
+                // Convert DTO to Command
+                java.util.List<String> itemIds = request.getRequest().stream()
                         .map(RequestItemRecord::id)
-                        .reduce((id1, id2) -> id1 + ", " + id2)
-                        .orElse("none");
+                        .toList();
                 
-                String message = String.format("Hello from Sandbox Service! 🚀 Processed IDs: [%s]", processedIds);
+                ProcessHelloCommand command = new ProcessHelloCommand(itemIds);
+                
+                // Use the use case to process the business logic
+                String message = processHelloRequestUseCase.processHelloRequest(command);
+                String timestamp = processHelloRequestUseCase.getCurrentTimestamp();
+                String serviceName = processHelloRequestUseCase.getServiceName();
                 
                 logger.info("Hello response created successfully");
                 
-                return new HelloResponse(
-                    message,
-                    timestamp,
-                    SERVICE_NAME
-                );
+                return new HelloResponse(message, timestamp, serviceName);
             })
         );
     }
@@ -93,14 +97,13 @@ public class SandboxController {
                 
                 logger.info("Health check requested with correlation ID: {}", correlationId);
                 
-                String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMATTER);
+                // Use the use case to get health status
+                String status = getHealthStatusUseCase.getHealthStatus();
+                String timestamp = getHealthStatusUseCase.getCurrentTimestamp();
+                String serviceName = getHealthStatusUseCase.getServiceName();
+                String serviceVersion = getHealthStatusUseCase.getServiceVersion();
                 
-                HealthResponse response = new HealthResponse(
-                    "UP",
-                    timestamp,
-                    SERVICE_NAME,
-                    SERVICE_VERSION
-                );
+                HealthResponse response = new HealthResponse(status, timestamp, serviceName, serviceVersion);
                 
                 logger.info("Health check completed successfully");
                 
@@ -123,28 +126,14 @@ public class SandboxController {
                 
                 logger.info("Testing error type: {} with correlation ID: {}", errorType, correlationId);
                 
-                switch (errorType.toLowerCase()) {
-                    case "domain_validation":
-                        throw DomainException.validationFailed("testField", "Test validation error");
-                    case "domain_entity_not_found":
-                        throw DomainException.entityNotFound("TestEntity", "test-id-123");
-                    case "domain_business_rule":
-                        throw DomainException.businessRuleViolation("TestRule", "Business rule violation");
-                    case "application_use_case":
-                        throw new io.unbyte.sandbox.application.exception.ApplicationServiceException(
-                            ErrorCode.APPLICATION_USE_CASE_FAILED,
-                            "Test use case failed"
-                        );
-                    case "infrastructure_database":
-                        throw new io.unbyte.sandbox.application.exception.ApplicationServiceException(
-                            ErrorCode.INFRASTRUCTURE_DATABASE_ERROR,
-                            "Test database error"
-                        );
-                    case "system_internal":
-                        throw new RuntimeException("Test system error");
-                    default:
-                        throw new IllegalArgumentException("Unknown error type: " + errorType);
-                }
+                // Convert to Command
+                TestErrorCommand command = new TestErrorCommand(errorType);
+                
+                // Use the use case to test the error
+                testErrorUseCase.testError(command);
+                
+                // This line will never be reached as testError always throws an exception
+                return null;
             })
         );
     }

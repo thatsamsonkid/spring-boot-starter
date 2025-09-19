@@ -1,10 +1,13 @@
-package io.unbyte.sandbox.application.dto.query;
+package io.unbyte.sandbox.application.query;
 
 import java.util.UUID;
 
 /**
- * Query DTO for application layer using Java Record
+ * Query for application layer using Java Record
  * Represents a data retrieval operation
+ * 
+ * This is NOT a DTO - it's a framework-agnostic query object
+ * that represents the intent to retrieve data.
  */
 public record GetByIdQuery(
     UUID id

@@ -70,21 +70,29 @@ src/main/java/io/unbyte/sandbox/
 4. **Maintainability**: Changes in one layer don't affect others
 5. **Clean Dependencies**: Dependencies point inward toward the domain
 
-## DTO Organization
+## DTO Placement Guidelines
 
-### Application Layer DTOs (`application/dto/`)
+### Infrastructure/Web Layer (`infrastructure/web/`)
 
-- **Purpose**: Business use cases and application services
-- **Types**: Commands, Queries, Business DTOs
-- **Examples**: `CreateCommand`, `GetByIdQuery`, `BaseDto`
-- **Usage**: Data transfer between application services and domain
+- **Purpose**: Handle HTTP/JSON serialization and validation
+- **Contains**: `@JsonProperty`, `@NotNull`, `@Valid`, `@JsonFormat` annotations
+- **Examples**: `HelloRequest`, `CreateRequest`, `HelloResponse`
+- **Why Here**: DTOs are adapter concerns that exist to translate between external formats (HTTP/JSON) and internal domain models
 
-### Infrastructure Layer DTOs (`infrastructure/web/`)
+### Application Layer (`application/command/`, `application/query/`)
 
-- **Purpose**: External communication (HTTP, messaging, etc.)
-- **Types**: Request DTOs, Response DTOs, Web DTOs
-- **Examples**: `CreateRequest`, `Response`, `WebDto`
-- **Usage**: Data transfer between external systems and application
+- **Purpose**: Framework-agnostic business operations
+- **Contains**: Pure domain-oriented types, no framework annotations
+- **Examples**: `CreateCommand`, `GetByIdQuery`
+- **Why Here**: These are NOT DTOs - they're framework-agnostic command/query objects that represent business intent
+
+### Why This Separation Matters
+
+- **Application layer stays pure**: No HTTP concerns, serialization, or validation annotations
+- **Easy to add new adapters**: GraphQL, gRPC, CLI adapters can be added without touching application logic
+- **Better testability**: Test business logic without serialization baggage
+- **Clean separation of concerns**: Each layer has distinct responsibilities
+- **API evolution**: DTOs evolve in infrastructure/web; domain and application layers stay stable
 
 ### Shared Layer DTOs (`shared/dto/`)
 

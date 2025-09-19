@@ -1,8 +1,11 @@
-package io.unbyte.sandbox.application.dto.command;
+package io.unbyte.sandbox.application.command;
 
 /**
- * Command DTO for application layer using Java Record
+ * Command for application layer using Java Record
  * Represents a business operation to be executed
+ * 
+ * This is NOT a DTO - it's a framework-agnostic command object
+ * that represents the intent to perform a business operation.
  * 
  * Records provide:
  * - Immutable data carrier
