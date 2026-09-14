@@ -2,18 +2,17 @@ package io.unbyte.sandbox.infrastructure.web.service;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Function;
 
 /**
  * Service for monitoring performance and tracking errors in reactive streams
@@ -22,7 +21,8 @@ import java.util.function.Function;
 @Service
 public class PerformanceMonitoringService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceMonitoringService.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(PerformanceMonitoringService.class);
     private final MeterRegistry meterRegistry;
 
     public PerformanceMonitoringService(MeterRegistry meterRegistry) {
@@ -42,30 +42,43 @@ public class PerformanceMonitoringService {
     public <T> Mono<T> monitorOperation(String operationName, Mono<T> operation, Tag[] customTags) {
         String correlationId = MDC.get("correlationId");
         String userId = MDC.get("userId");
-        
+
         Instant startTime = Instant.now();
-        
-        logger.debug("Starting operation: {} with correlation ID: {}", operationName, correlationId);
-        
+
+        logger.debug(
+                "Starting operation: {} with correlation ID: {}", operationName, correlationId);
+
         return operation
-            .doOnSuccess(result -> {
-                Duration duration = Duration.between(startTime, Instant.now());
-                
-                // Record success metrics
-                recordSuccess(operationName, duration, customTags);
-                
-                logger.info("Operation completed successfully: {} in {}ms with correlation ID: {}", 
-                    operationName, duration.toMillis(), correlationId);
-            })
-            .doOnError(throwable -> {
-                Duration duration = Duration.between(startTime, Instant.now());
-                
-                // Record error metrics
-                recordError(operationName, throwable, duration, customTags);
-                
-                logger.error("Operation failed: {} in {}ms with correlation ID: {} - Error: {}", 
-                    operationName, duration.toMillis(), correlationId, throwable.getMessage(), throwable);
-            });
+                .doOnSuccess(
+                        result -> {
+                            Duration duration = Duration.between(startTime, Instant.now());
+
+                            // Record success metrics
+                            recordSuccess(operationName, duration, customTags);
+
+                            logger.info(
+                                    "Operation completed successfully: {} in {}ms with correlation"
+                                            + " ID: {}",
+                                    operationName,
+                                    duration.toMillis(),
+                                    correlationId);
+                        })
+                .doOnError(
+                        throwable -> {
+                            Duration duration = Duration.between(startTime, Instant.now());
+
+                            // Record error metrics
+                            recordError(operationName, throwable, duration, customTags);
+
+                            logger.error(
+                                    "Operation failed: {} in {}ms with correlation ID: {} - Error:"
+                                            + " {}",
+                                    operationName,
+                                    duration.toMillis(),
+                                    correlationId,
+                                    throwable.getMessage(),
+                                    throwable);
+                        });
     }
 
     /**
@@ -78,34 +91,43 @@ public class PerformanceMonitoringService {
     /**
      * Monitor a function execution with performance metrics and custom tags
      */
-    public <T, R> R monitorFunction(String functionName, T input, Function<T, R> function, Tag[] customTags) {
+    public <T, R> R monitorFunction(
+            String functionName, T input, Function<T, R> function, Tag[] customTags) {
         String correlationId = MDC.get("correlationId");
         String userId = MDC.get("userId");
-        
+
         Instant startTime = Instant.now();
-        
+
         logger.debug("Starting function: {} with correlation ID: {}", functionName, correlationId);
-        
+
         try {
             R result = function.apply(input);
             Duration duration = Duration.between(startTime, Instant.now());
-            
+
             // Record success metrics
             recordSuccess(functionName, duration, customTags);
-            
-            logger.info("Function completed successfully: {} in {}ms with correlation ID: {}", 
-                functionName, duration.toMillis(), correlationId);
-            
+
+            logger.info(
+                    "Function completed successfully: {} in {}ms with correlation ID: {}",
+                    functionName,
+                    duration.toMillis(),
+                    correlationId);
+
             return result;
         } catch (Exception throwable) {
             Duration duration = Duration.between(startTime, Instant.now());
-            
+
             // Record error metrics
             recordError(functionName, throwable, duration, customTags);
-            
-            logger.error("Function failed: {} in {}ms with correlation ID: {} - Error: {}", 
-                functionName, duration.toMillis(), correlationId, throwable.getMessage(), throwable);
-            
+
+            logger.error(
+                    "Function failed: {} in {}ms with correlation ID: {} - Error: {}",
+                    functionName,
+                    duration.toMillis(),
+                    correlationId,
+                    throwable.getMessage(),
+                    throwable);
+
             throw throwable;
         }
     }
@@ -115,70 +137,75 @@ public class PerformanceMonitoringService {
      */
     private void recordSuccess(String operationName, Duration duration, Tag[] customTags) {
         Timer.Sample sample = Timer.start(meterRegistry);
-        
-        Timer.Builder timerBuilder = Timer.builder("sandbox.operations.duration")
-            .tag("operation", operationName)
-            .tag("status", "success")
-            .tag("service", "sandbox");
-        
+
+        Timer.Builder timerBuilder =
+                Timer.builder("sandbox.operations.duration")
+                        .tag("operation", operationName)
+                        .tag("status", "success")
+                        .tag("service", "sandbox");
+
         if (customTags != null) {
             timerBuilder.tags(Arrays.asList(customTags));
         }
-        
+
         sample.stop(timerBuilder.register(meterRegistry));
-        
+
         // Record success counter
-        Counter.Builder counterBuilder = Counter.builder("sandbox.operations.success")
-            .tag("operation", operationName)
-            .tag("service", "sandbox");
-        
+        Counter.Builder counterBuilder =
+                Counter.builder("sandbox.operations.success")
+                        .tag("operation", operationName)
+                        .tag("service", "sandbox");
+
         if (customTags != null) {
             counterBuilder.tags(Arrays.asList(customTags));
         }
-        
+
         counterBuilder.register(meterRegistry).increment();
     }
 
     /**
      * Record error metrics
      */
-    private void recordError(String operationName, Throwable throwable, Duration duration, Tag[] customTags) {
+    private void recordError(
+            String operationName, Throwable throwable, Duration duration, Tag[] customTags) {
         String errorType = throwable.getClass().getSimpleName();
         String errorMessage = throwable.getMessage();
-        
+
         Timer.Sample sample = Timer.start(meterRegistry);
-        
-        Timer.Builder timerBuilder = Timer.builder("sandbox.operations.duration")
-            .tag("operation", operationName)
-            .tag("status", "error")
-            .tag("error_type", errorType)
-            .tag("service", "sandbox");
-        
+
+        Timer.Builder timerBuilder =
+                Timer.builder("sandbox.operations.duration")
+                        .tag("operation", operationName)
+                        .tag("status", "error")
+                        .tag("error_type", errorType)
+                        .tag("service", "sandbox");
+
         if (customTags != null) {
             timerBuilder.tags(Arrays.asList(customTags));
         }
-        
+
         sample.stop(timerBuilder.register(meterRegistry));
-        
+
         // Record error counter
-        Counter.Builder counterBuilder = Counter.builder("sandbox.operations.error")
-            .tag("operation", operationName)
-            .tag("error_type", errorType)
-            .tag("service", "sandbox");
-        
+        Counter.Builder counterBuilder =
+                Counter.builder("sandbox.operations.error")
+                        .tag("operation", operationName)
+                        .tag("error_type", errorType)
+                        .tag("service", "sandbox");
+
         if (customTags != null) {
             counterBuilder.tags(Arrays.asList(customTags));
         }
-        
+
         counterBuilder.register(meterRegistry).increment();
-        
+
         // Record error by type
         Counter.builder("sandbox.errors.by.type")
-            .tag("error_type", errorType)
-            .tag("operation", operationName)
-            .tag("service", "sandbox")
-            .register(meterRegistry)
-            .increment();
+                .tag("error_type", errorType)
+                .tag("operation", operationName)
+                .tag("service", "sandbox")
+                .register(meterRegistry)
+                .increment();
     }
 
     /**
@@ -188,12 +215,12 @@ public class PerformanceMonitoringService {
         if (keyValuePairs.length % 2 != 0) {
             throw new IllegalArgumentException("Key-value pairs must be even");
         }
-        
+
         Tag[] tags = new Tag[keyValuePairs.length / 2];
         for (int i = 0; i < keyValuePairs.length; i += 2) {
             tags[i / 2] = Tag.of(keyValuePairs[i], keyValuePairs[i + 1]);
         }
-        
+
         return tags;
     }
 

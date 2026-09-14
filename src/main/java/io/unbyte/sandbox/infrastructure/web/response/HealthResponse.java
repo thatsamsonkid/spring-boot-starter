@@ -6,12 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Response DTO for /health endpoint using Java Record
  */
 public record HealthResponse(
-    @JsonProperty("status") String status,
-    @JsonProperty("timestamp") String timestamp,
-    @JsonProperty("service") String service,
-    @JsonProperty("version") String version
-) {
-    
+        @JsonProperty("status") String status,
+        @JsonProperty("timestamp") String timestamp,
+        @JsonProperty("service") String service,
+        @JsonProperty("version") String version) {
+
     /**
      * Compact constructor for validation
      */
@@ -29,14 +28,14 @@ public record HealthResponse(
             throw new IllegalArgumentException("Version cannot be null or empty");
         }
     }
-    
+
     /**
      * Factory method for healthy status
      */
     public static HealthResponse healthy(String timestamp, String version) {
         return new HealthResponse("UP", timestamp, "sandbox", version);
     }
-    
+
     /**
      * Factory method for unhealthy status
      */

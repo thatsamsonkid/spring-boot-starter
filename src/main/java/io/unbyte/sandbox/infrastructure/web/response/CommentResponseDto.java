@@ -7,12 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Maps from domain Comment to JSON response
  */
 public record CommentResponseDto(
-    @JsonProperty("id") String id,
-    @JsonProperty("name") String name,
-    @JsonProperty("email") String email,
-    @JsonProperty("body") String body
-) {
-    
+        @JsonProperty("id") String id,
+        @JsonProperty("name") String name,
+        @JsonProperty("email") String email,
+        @JsonProperty("body") String body) {
+
     /**
      * Compact constructor for validation
      */

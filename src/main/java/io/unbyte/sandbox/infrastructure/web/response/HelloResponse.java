@@ -4,15 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Response DTO for /hello endpoint using Java Record
- * 
+ *
  * Records work perfectly with Jackson annotations
  */
 public record HelloResponse(
-    @JsonProperty("message") String message,
-    @JsonProperty("timestamp") String timestamp,
-    @JsonProperty("service") String service
-) {
-    
+        @JsonProperty("message") String message,
+        @JsonProperty("timestamp") String timestamp,
+        @JsonProperty("service") String service) {
+
     /**
      * Compact constructor for validation
      */
@@ -27,7 +26,7 @@ public record HelloResponse(
             throw new IllegalArgumentException("Service cannot be null or empty");
         }
     }
-    
+
     /**
      * Factory method for common use cases
      */

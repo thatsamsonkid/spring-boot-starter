@@ -7,13 +7,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Maps from JSONPlaceholder API response
  */
 public record ExternalCommentDto(
-    @JsonProperty("postId") String postId,
-    @JsonProperty("id") String id,
-    @JsonProperty("name") String name,
-    @JsonProperty("email") String email,
-    @JsonProperty("body") String body
-) {
-    
+        @JsonProperty("postId") String postId,
+        @JsonProperty("id") String id,
+        @JsonProperty("name") String name,
+        @JsonProperty("email") String email,
+        @JsonProperty("body") String body) {
+
     /**
      * Compact constructor for validation
      */

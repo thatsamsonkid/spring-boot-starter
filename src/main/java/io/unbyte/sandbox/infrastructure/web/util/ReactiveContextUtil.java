@@ -1,11 +1,10 @@
 package io.unbyte.sandbox.infrastructure.web.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.MDC;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Utility class for managing context in reactive streams
@@ -14,7 +13,7 @@ import java.util.Map;
 public class ReactiveContextUtil {
 
     private static final String MDC_CONTEXT_KEY = "mdcContext";
-    
+
     // Common context keys
     public static final String CORRELATION_ID = "correlationId";
     public static final String REQUEST_ID = "requestId";
@@ -25,20 +24,20 @@ public class ReactiveContextUtil {
      * Get a context value from the current reactive context
      */
     public static <T> Mono<T> getContextValue(String key, Class<T> type) {
-        return Mono.deferContextual(ctx -> {
-            if (ctx.hasKey(key)) {
-                return Mono.just(ctx.get(key));
-            }
-            return Mono.empty();
-        });
+        return Mono.deferContextual(
+                ctx -> {
+                    if (ctx.hasKey(key)) {
+                        return Mono.just(ctx.get(key));
+                    }
+                    return Mono.empty();
+                });
     }
 
     /**
      * Get a context value with a default value
      */
     public static <T> Mono<T> getContextValue(String key, T defaultValue, Class<T> type) {
-        return getContextValue(key, type)
-            .switchIfEmpty(Mono.just(defaultValue));
+        return getContextValue(key, type).switchIfEmpty(Mono.just(defaultValue));
     }
 
     /**
@@ -103,22 +102,25 @@ public class ReactiveContextUtil {
      * Propagate context to MDC for the duration of the operation
      */
     public static <T> Mono<T> withMdcContext(Mono<T> mono) {
-        return mono.doOnEach(signal -> {
-            if (signal.hasValue() || signal.hasError()) {
-                // Set MDC from reactive context
-                reactor.util.context.ContextView context = signal.getContextView();
-                if (context.hasKey(MDC_CONTEXT_KEY)) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, String> mdcContext = context.get(MDC_CONTEXT_KEY);
-                    if (mdcContext != null) {
-                        mdcContext.forEach(MDC::put);
-                    }
-                }
-            }
-        }).doFinally(signalType -> {
-            // Clear MDC after processing
-            MDC.clear();
-        });
+        return mono.doOnEach(
+                        signal -> {
+                            if (signal.hasValue() || signal.hasError()) {
+                                // Set MDC from reactive context
+                                reactor.util.context.ContextView context = signal.getContextView();
+                                if (context.hasKey(MDC_CONTEXT_KEY)) {
+                                    @SuppressWarnings("unchecked")
+                                    Map<String, String> mdcContext = context.get(MDC_CONTEXT_KEY);
+                                    if (mdcContext != null) {
+                                        mdcContext.forEach(MDC::put);
+                                    }
+                                }
+                            }
+                        })
+                .doFinally(
+                        signalType -> {
+                            // Clear MDC after processing
+                            MDC.clear();
+                        });
     }
 
     /**

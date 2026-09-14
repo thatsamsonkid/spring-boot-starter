@@ -1,15 +1,14 @@
 package io.unbyte.sandbox.infrastructure.web.config;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
+import io.micrometer.core.instrument.Timer;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration for metrics collection using Micrometer
@@ -159,15 +158,15 @@ public class MetricsConfig {
     public void recordError(String endpoint, String errorType, String errorMessage) {
         errorCounter().increment();
         Counter.builder("sandbox.errors.by.type")
-            .tag("error_type", errorType)
-            .tag("service", "sandbox")
-            .register(meterRegistry)
-            .increment();
+                .tag("error_type", errorType)
+                .tag("service", "sandbox")
+                .register(meterRegistry)
+                .increment();
         Counter.builder("sandbox.errors.by.endpoint")
-            .tag("endpoint", endpoint)
-            .tag("service", "sandbox")
-            .register(meterRegistry)
-            .increment();
+                .tag("endpoint", endpoint)
+                .tag("service", "sandbox")
+                .register(meterRegistry)
+                .increment();
     }
 
     /**
@@ -175,26 +174,26 @@ public class MetricsConfig {
      */
     public void recordRequest(String endpoint, String method, boolean success) {
         Counter.builder("sandbox.requests.total")
-            .tag("endpoint", endpoint)
-            .tag("method", method)
-            .tag("service", "sandbox")
-            .register(meterRegistry)
-            .increment();
-        
+                .tag("endpoint", endpoint)
+                .tag("method", method)
+                .tag("service", "sandbox")
+                .register(meterRegistry)
+                .increment();
+
         if (success) {
             Counter.builder("sandbox.requests.success")
-                .tag("endpoint", endpoint)
-                .tag("method", method)
-                .tag("service", "sandbox")
-                .register(meterRegistry)
-                .increment();
+                    .tag("endpoint", endpoint)
+                    .tag("method", method)
+                    .tag("service", "sandbox")
+                    .register(meterRegistry)
+                    .increment();
         } else {
             Counter.builder("sandbox.requests.error")
-                .tag("endpoint", endpoint)
-                .tag("method", method)
-                .tag("service", "sandbox")
-                .register(meterRegistry)
-                .increment();
+                    .tag("endpoint", endpoint)
+                    .tag("method", method)
+                    .tag("service", "sandbox")
+                    .register(meterRegistry)
+                    .increment();
         }
     }
 }

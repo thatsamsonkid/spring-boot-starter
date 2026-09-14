@@ -5,14 +5,12 @@ import java.util.List;
 /**
  * Command for processing hello request using Java Record
  * Represents the intent to process a hello request with items
- * 
+ *
  * This is NOT a DTO - it's a framework-agnostic command object
  * that represents the intent to process a hello request.
  */
-public record ProcessHelloCommand(
-    List<String> itemIds
-) {
-    
+public record ProcessHelloCommand(List<String> itemIds) {
+
     /**
      * Compact constructor for validation
      */
@@ -21,14 +19,14 @@ public record ProcessHelloCommand(
             throw new IllegalArgumentException("Item IDs cannot be null");
         }
     }
-    
+
     /**
      * Convenience method for business logic
      */
     public boolean hasItems() {
         return itemIds != null && !itemIds.isEmpty();
     }
-    
+
     /**
      * Get the number of items
      */

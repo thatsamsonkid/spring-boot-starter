@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration class for application layer beans.
- * 
+ *
  * This class handles dependency injection for framework-agnostic use cases.
  * The application layer remains clean of Spring annotations.
  */

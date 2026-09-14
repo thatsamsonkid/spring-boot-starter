@@ -8,11 +8,8 @@ import jakarta.validation.constraints.NotNull;
  * This replaces the inner class RequestItem from HelloRequest
  */
 public record RequestItemRecord(
-    @JsonProperty("id")
-    @NotNull(message = "ID cannot be null")
-    String id
-) {
-    
+        @JsonProperty("id") @NotNull(message = "ID cannot be null") String id) {
+
     /**
      * Compact constructor for validation
      */

@@ -6,11 +6,11 @@ import java.util.Objects;
  * Utility class for common validation operations
  */
 public final class ValidationUtils {
-    
+
     private ValidationUtils() {
         // Utility class - prevent instantiation
     }
-    
+
     /**
      * Validates that an object is not null
      * @param object the object to validate
@@ -22,7 +22,7 @@ public final class ValidationUtils {
             throw new IllegalArgumentException(fieldName + " cannot be null");
         }
     }
-    
+
     /**
      * Validates that a string is not null or empty
      * @param value the string to validate
