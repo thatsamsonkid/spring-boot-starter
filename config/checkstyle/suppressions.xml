@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+    <!-- ArchUnit rules are static final fields with camelCase names by convention. -->
+    <suppress checks="ConstantName" files="[\\/]src[\\/]test[\\/].*"/>
+    <!-- Fluent builder methods reuse field names as parameters. -->
+    <suppress checks="HiddenField" files="ApplicationException\.java"/>
+</suppressions>
