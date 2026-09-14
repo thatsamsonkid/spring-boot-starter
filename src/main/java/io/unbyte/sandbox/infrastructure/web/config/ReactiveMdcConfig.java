@@ -1,14 +1,13 @@
 package io.unbyte.sandbox.infrastructure.web.config;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import java.util.Map;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Operators;
 import reactor.util.context.Context;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import java.util.Map;
 
 /**
  * Configuration for MDC (Mapped Diagnostic Context) bridge in reactive streams
@@ -23,9 +22,10 @@ public class ReactiveMdcConfig {
     @PostConstruct
     public void setupMdcContextLifter() {
         // Install the MDC context lifter hook that automatically propagates context
-        Hooks.onEachOperator(MDC_CONTEXT_KEY, 
-            Operators.lift((scannable, coreSubscriber) -> 
-                new MdcContextLifter<>(coreSubscriber)));
+        Hooks.onEachOperator(
+                MDC_CONTEXT_KEY,
+                Operators.lift(
+                        (scannable, coreSubscriber) -> new MdcContextLifter<>(coreSubscriber)));
     }
 
     @PreDestroy
@@ -41,7 +41,7 @@ public class ReactiveMdcConfig {
     private static class MdcContextLifter<T> implements reactor.core.CoreSubscriber<T> {
         private final reactor.core.CoreSubscriber<T> actual;
 
-        public MdcContextLifter(reactor.core.CoreSubscriber<T> actual) {
+        MdcContextLifter(reactor.core.CoreSubscriber<T> actual) {
             this.actual = actual;
         }
 

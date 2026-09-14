@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring", uses = CommentMapper.class)
 public interface PostMapper {
-    
+
     /**
      * Map domain Post to response DTO
      * @param post domain post

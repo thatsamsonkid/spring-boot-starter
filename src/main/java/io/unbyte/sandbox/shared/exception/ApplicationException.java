@@ -8,7 +8,7 @@ import java.util.Map;
  * Provides structured error information with context
  */
 public class ApplicationException extends RuntimeException {
-    
+
     private final ErrorCode errorCode;
     private final String correlationId;
     private final String userId;
@@ -25,9 +25,15 @@ public class ApplicationException extends RuntimeException {
         this(errorCode, message, cause, null, null, null, null, null);
     }
 
-    public ApplicationException(ErrorCode errorCode, String message, Throwable cause, 
-                              String correlationId, String userId, String layer, 
-                              String operation, Map<String, Object> context) {
+    public ApplicationException(
+            ErrorCode errorCode,
+            String message,
+            Throwable cause,
+            String correlationId,
+            String userId,
+            String layer,
+            String operation,
+            Map<String, Object> context) {
         super(message, cause);
         this.errorCode = errorCode;
         this.correlationId = correlationId;
@@ -39,13 +45,33 @@ public class ApplicationException extends RuntimeException {
     }
 
     // Getters
-    public ErrorCode getErrorCode() { return errorCode; }
-    public String getCorrelationId() { return correlationId; }
-    public String getUserId() { return userId; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public Map<String, Object> getContext() { return context; }
-    public String getLayer() { return layer; }
-    public String getOperation() { return operation; }
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Map<String, Object> getContext() {
+        return context;
+    }
+
+    public String getLayer() {
+        return layer;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
 
     /**
      * Create a builder for structured exception creation
@@ -100,9 +126,8 @@ public class ApplicationException extends RuntimeException {
         }
 
         public ApplicationException build() {
-            return new ApplicationException(errorCode, message, cause, 
-                correlationId, userId, layer, operation, context);
+            return new ApplicationException(
+                    errorCode, message, cause, correlationId, userId, layer, operation, context);
         }
     }
 }
-

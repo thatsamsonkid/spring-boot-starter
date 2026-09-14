@@ -1,7 +1,6 @@
 package io.unbyte.sandbox.infrastructure.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -9,10 +8,9 @@ import java.util.List;
  * Contains post ID and its comments
  */
 public record PostResponseDto(
-    @JsonProperty("id") String id,
-    @JsonProperty("comments") List<CommentResponseDto> comments
-) {
-    
+        @JsonProperty("id") String id,
+        @JsonProperty("comments") List<CommentResponseDto> comments) {
+
     /**
      * Compact constructor for validation
      */

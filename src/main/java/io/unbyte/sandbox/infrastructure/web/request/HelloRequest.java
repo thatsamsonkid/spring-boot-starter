@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  * Updated to use RequestItemRecord instead of inner class
  */
 public class HelloRequest {
-    
+
     @JsonProperty("request")
     @NotNull(message = "Request cannot be null")
     @NotEmpty(message = "Request cannot be empty")

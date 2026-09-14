@@ -8,11 +8,8 @@ import jakarta.validation.constraints.NotNull;
  * Maps to domain post IDs
  */
 public record PostRequestDto(
-    @JsonProperty("postId")
-    @NotNull(message = "Post ID cannot be null")
-    String postId
-) {
-    
+        @JsonProperty("postId") @NotNull(message = "Post ID cannot be null") String postId) {
+
     /**
      * Compact constructor for validation
      */

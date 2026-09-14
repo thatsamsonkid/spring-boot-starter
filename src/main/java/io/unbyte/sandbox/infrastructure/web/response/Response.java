@@ -8,13 +8,18 @@ import java.util.UUID;
  * Example response DTO for web layer
  */
 public class Response extends WebDto {
-    
+
     private String name;
     private String description;
 
     public Response() {}
 
-    public Response(UUID id, String name, String description, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Response(
+            UUID id,
+            String name,
+            String description,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
         super(id, createdAt, updatedAt);
         this.name = name;
         this.description = description;

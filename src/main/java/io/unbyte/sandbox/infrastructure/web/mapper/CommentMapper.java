@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
  */
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
-    
+
     /**
      * Map domain Comment to response DTO
      * @param comment domain comment

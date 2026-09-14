@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  * Contains a list of post requests
  */
 public class PostsRequestDto {
-    
+
     @JsonProperty("request")
     @NotNull(message = "Request cannot be null")
     @NotEmpty(message = "Request cannot be empty")

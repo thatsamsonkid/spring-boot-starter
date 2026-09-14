@@ -35,11 +35,19 @@ public class Comment {
 
     @Override
     public String toString() {
-        return "Comment{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", body='" + body + '\'' +
-                '}';
+        return "Comment{"
+                + "id='"
+                + id
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + ", email='"
+                + email
+                + '\''
+                + ", body='"
+                + body
+                + '\''
+                + '}';
     }
 }

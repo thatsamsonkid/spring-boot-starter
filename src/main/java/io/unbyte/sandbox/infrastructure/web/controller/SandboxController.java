@@ -3,7 +3,6 @@ package io.unbyte.sandbox.infrastructure.web.controller;
 import io.unbyte.sandbox.application.command.FetchPostsCommand;
 import io.unbyte.sandbox.application.command.ProcessHelloCommand;
 import io.unbyte.sandbox.application.command.TestErrorCommand;
-import io.unbyte.sandbox.infrastructure.web.usecase.ReactiveFetchPostsUseCase;
 import io.unbyte.sandbox.application.usecase.GetHealthStatusUseCase;
 import io.unbyte.sandbox.application.usecase.ProcessHelloRequestUseCase;
 import io.unbyte.sandbox.application.usecase.TestErrorUseCase;
@@ -11,21 +10,25 @@ import io.unbyte.sandbox.infrastructure.web.mapper.PostMapper;
 import io.unbyte.sandbox.infrastructure.web.request.HelloRequest;
 import io.unbyte.sandbox.infrastructure.web.request.PostsRequestDto;
 import io.unbyte.sandbox.infrastructure.web.request.RequestItemRecord;
-import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
+import io.unbyte.sandbox.infrastructure.web.response.HelloResponse;
 import io.unbyte.sandbox.infrastructure.web.response.PostsResponseDto;
 import io.unbyte.sandbox.infrastructure.web.service.ErrorTrackingService;
 import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
+import io.unbyte.sandbox.infrastructure.web.usecase.ReactiveFetchPostsUseCase;
 import jakarta.validation.Valid;
-
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 /**
  * REST Controller for Sandbox application
@@ -36,7 +39,7 @@ import java.util.List;
 public class SandboxController {
 
     private static final Logger logger = LoggerFactory.getLogger(SandboxController.class);
-    
+
     private final PerformanceMonitoringService performanceMonitoringService;
     private final ErrorTrackingService errorTrackingService;
     private final ProcessHelloRequestUseCase processHelloRequestUseCase;
@@ -45,13 +48,14 @@ public class SandboxController {
     private final ReactiveFetchPostsUseCase fetchPostsUseCase;
     private final PostMapper postMapper;
 
-    public SandboxController(PerformanceMonitoringService performanceMonitoringService, 
-                           ErrorTrackingService errorTrackingService,
-                           ProcessHelloRequestUseCase processHelloRequestUseCase,
-                           GetHealthStatusUseCase getHealthStatusUseCase,
-                           TestErrorUseCase testErrorUseCase,
-                           ReactiveFetchPostsUseCase fetchPostsUseCase,
-                           PostMapper postMapper) {
+    public SandboxController(
+            PerformanceMonitoringService performanceMonitoringService,
+            ErrorTrackingService errorTrackingService,
+            ProcessHelloRequestUseCase processHelloRequestUseCase,
+            GetHealthStatusUseCase getHealthStatusUseCase,
+            TestErrorUseCase testErrorUseCase,
+            ReactiveFetchPostsUseCase fetchPostsUseCase,
+            PostMapper postMapper) {
         this.performanceMonitoringService = performanceMonitoringService;
         this.errorTrackingService = errorTrackingService;
         this.processHelloRequestUseCase = processHelloRequestUseCase;
@@ -66,34 +70,42 @@ public class SandboxController {
      * @param request the request containing items with IDs
      * @return Mono<HelloResponse> with greeting message and processed IDs
      */
-    @PostMapping(value = "/hello", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/hello",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HelloResponse> hello(@Valid @RequestBody HelloRequest request) {
-        return performanceMonitoringService.monitorOperation("hello_endpoint", 
-            Mono.fromCallable(() -> {
-                // Context is automatically available in MDC due to the MDC bridge
-                String correlationId = MDC.get("correlationId");
-                String userId = MDC.get("userId");
-                
-                logger.info("Processing hello request with correlation ID: {}", correlationId);
-                logger.info("Processing request for user: {}", userId);
-                
-                // Convert DTO to Command
-                java.util.List<String> itemIds = request.getRequest().stream()
-                        .map(RequestItemRecord::id)
-                        .toList();
-                
-                ProcessHelloCommand command = new ProcessHelloCommand(itemIds);
-                
-                // Use the use case to process the business logic
-                String message = processHelloRequestUseCase.processHelloRequest(command);
-                String timestamp = processHelloRequestUseCase.getCurrentTimestamp();
-                String serviceName = processHelloRequestUseCase.getServiceName();
-                
-                logger.info("Hello response created successfully");
-                
-                return new HelloResponse(message, timestamp, serviceName);
-            })
-        );
+        return performanceMonitoringService.monitorOperation(
+                "hello_endpoint",
+                Mono.fromCallable(
+                        () -> {
+                            // Context is automatically available in MDC due to the MDC bridge
+                            String correlationId = MDC.get("correlationId");
+                            String userId = MDC.get("userId");
+
+                            logger.info(
+                                    "Processing hello request with correlation ID: {}",
+                                    correlationId);
+                            logger.info("Processing request for user: {}", userId);
+
+                            // Convert DTO to Command
+                            java.util.List<String> itemIds =
+                                    request.getRequest().stream()
+                                            .map(RequestItemRecord::id)
+                                            .toList();
+
+                            ProcessHelloCommand command = new ProcessHelloCommand(itemIds);
+
+                            // Use the use case to process the business logic
+                            String message =
+                                    processHelloRequestUseCase.processHelloRequest(command);
+                            String timestamp = processHelloRequestUseCase.getCurrentTimestamp();
+                            String serviceName = processHelloRequestUseCase.getServiceName();
+
+                            logger.info("Hello response created successfully");
+
+                            return new HelloResponse(message, timestamp, serviceName);
+                        }));
     }
 
     /**
@@ -102,26 +114,31 @@ public class SandboxController {
      */
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HealthResponse> health() {
-        return performanceMonitoringService.monitorOperation("health_endpoint",
-            Mono.fromCallable(() -> {
-                // Context is automatically available in MDC due to the MDC bridge
-                String correlationId = MDC.get("correlationId");
-                
-                logger.info("Health check requested with correlation ID: {}", correlationId);
-                
-                // Use the use case to get health status
-                String status = getHealthStatusUseCase.getHealthStatus();
-                String timestamp = getHealthStatusUseCase.getCurrentTimestamp();
-                String serviceName = getHealthStatusUseCase.getServiceName();
-                String serviceVersion = getHealthStatusUseCase.getServiceVersion();
-                
-                HealthResponse response = new HealthResponse(status, timestamp, serviceName, serviceVersion);
-                
-                logger.info("Health check completed successfully");
-                
-                return response;
-            })
-        );
+        return performanceMonitoringService.monitorOperation(
+                "health_endpoint",
+                Mono.fromCallable(
+                        () -> {
+                            // Context is automatically available in MDC due to the MDC bridge
+                            String correlationId = MDC.get("correlationId");
+
+                            logger.info(
+                                    "Health check requested with correlation ID: {}",
+                                    correlationId);
+
+                            // Use the use case to get health status
+                            String status = getHealthStatusUseCase.getHealthStatus();
+                            String timestamp = getHealthStatusUseCase.getCurrentTimestamp();
+                            String serviceName = getHealthStatusUseCase.getServiceName();
+                            String serviceVersion = getHealthStatusUseCase.getServiceVersion();
+
+                            HealthResponse response =
+                                    new HealthResponse(
+                                            status, timestamp, serviceName, serviceVersion);
+
+                            logger.info("Health check completed successfully");
+
+                            return response;
+                        }));
     }
 
     /**
@@ -131,23 +148,28 @@ public class SandboxController {
      */
     @GetMapping(value = "/test-error", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HelloResponse> testError(@RequestParam String errorType) {
-        return performanceMonitoringService.monitorOperation("test_error_endpoint",
-            Mono.fromCallable(() -> {
-                String correlationId = MDC.get("correlationId");
-                String userId = MDC.get("userId");
-                
-                logger.info("Testing error type: {} with correlation ID: {}", errorType, correlationId);
-                
-                // Convert to Command
-                TestErrorCommand command = new TestErrorCommand(errorType);
-                
-                // Use the use case to test the error
-                testErrorUseCase.testError(command);
-                
-                // This line will never be reached as testError always throws an exception
-                return null;
-            })
-        );
+        return performanceMonitoringService.monitorOperation(
+                "test_error_endpoint",
+                Mono.fromCallable(
+                        () -> {
+                            String correlationId = MDC.get("correlationId");
+                            String userId = MDC.get("userId");
+
+                            logger.info(
+                                    "Testing error type: {} with correlation ID: {}",
+                                    errorType,
+                                    correlationId);
+
+                            // Convert to Command
+                            TestErrorCommand command = new TestErrorCommand(errorType);
+
+                            // Use the use case to test the error
+                            testErrorUseCase.testError(command);
+
+                            // This line will never be reached as testError always throws an
+                            // exception
+                            return null;
+                        }));
     }
 
     /**
@@ -155,45 +177,68 @@ public class SandboxController {
      * @param request the request containing post IDs
      * @return Mono<PostsResponseDto> with posts and their comments
      */
-    @PostMapping(value = "/posts", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/posts",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<PostsResponseDto> fetchPosts(@Valid @RequestBody PostsRequestDto request) {
-        return performanceMonitoringService.monitorOperation("fetch_posts_endpoint", 
-            Mono.fromCallable(() -> {
-                // Context is automatically available in MDC due to the MDC bridge
-                String correlationId = MDC.get("correlationId");
-                String userId = MDC.get("userId");
-                
-                logger.info("Fetching posts with correlation ID: {}", correlationId);
-                logger.info("Processing request for user: {}", userId);
-                
-                // Convert DTO to Command
-                List<String> postIds = request.getRequest().stream()
-                        .map(io.unbyte.sandbox.infrastructure.web.request.PostRequestDto::postId)
-                        .toList();
-                
-                FetchPostsCommand command = new FetchPostsCommand(postIds);
-                
-                logger.info("Created command with {} post IDs", command.getPostCount());
-                
-                return command;
-            })
-            .flatMap(command -> {
-                // Use reactive use case directly
-                return fetchPostsUseCase.fetchPostsWithComments(command.postIds());
-            })
-            .map(posts -> {
-                // Convert domain posts to response DTOs
-                List<io.unbyte.sandbox.infrastructure.web.response.PostResponseDto> postDtos = posts.stream()
-                        .map(postMapper::toResponseDto)
-                        .toList();
-                
-                PostsResponseDto.DataDto data = new PostsResponseDto.DataDto(postDtos);
-                PostsResponseDto response = new PostsResponseDto(data);
-                
-                logger.info("Successfully fetched {} posts with comments", posts.size());
-                
-                return response;
-            })
-        );
+        return performanceMonitoringService.monitorOperation(
+                "fetch_posts_endpoint",
+                Mono.fromCallable(
+                                () -> {
+                                    // Context is automatically available in MDC due to the MDC
+                                    // bridge
+                                    String correlationId = MDC.get("correlationId");
+                                    String userId = MDC.get("userId");
+
+                                    logger.info(
+                                            "Fetching posts with correlation ID: {}",
+                                            correlationId);
+                                    logger.info("Processing request for user: {}", userId);
+
+                                    // Convert DTO to Command
+                                    List<String> postIds =
+                                            request.getRequest().stream()
+                                                    .map(
+                                                            io.unbyte.sandbox.infrastructure.web
+                                                                            .request.PostRequestDto
+                                                                    ::postId)
+                                                    .toList();
+
+                                    FetchPostsCommand command = new FetchPostsCommand(postIds);
+
+                                    logger.info(
+                                            "Created command with {} post IDs",
+                                            command.getPostCount());
+
+                                    return command;
+                                })
+                        .flatMap(
+                                command -> {
+                                    // Use reactive use case directly
+                                    return fetchPostsUseCase.fetchPostsWithComments(
+                                            command.postIds());
+                                })
+                        .map(
+                                posts -> {
+                                    // Convert domain posts to response DTOs
+                                    List<
+                                                    io.unbyte.sandbox.infrastructure.web.response
+                                                            .PostResponseDto>
+                                            postDtos =
+                                                    posts.stream()
+                                                            .map(postMapper::toResponseDto)
+                                                            .toList();
+
+                                    PostsResponseDto.DataDto data =
+                                            new PostsResponseDto.DataDto(postDtos);
+                                    PostsResponseDto response = new PostsResponseDto(data);
+
+                                    logger.info(
+                                            "Successfully fetched {} posts with comments",
+                                            posts.size());
+
+                                    return response;
+                                }));
     }
 }
