@@ -49,6 +49,7 @@ public class HexagonalArchitectureTest {
                     "org.springframework..", 
                     "jakarta.persistence..", 
                     "com.fasterxml.jackson..",
+                    "tools.jackson..",
                     "jakarta.validation..",
                     "org.hibernate..");
 
@@ -111,7 +112,8 @@ public class HexagonalArchitectureTest {
     static final ArchRule applicationShouldNotDependOnJackson = ArchRuleDefinition.noClasses()
             .that().resideInAPackage(APPLICATION)
             .should().dependOnClassesThat().resideInAnyPackage(
-                    "com.fasterxml.jackson..");
+                    "com.fasterxml.jackson..",
+                    "tools.jackson..");
 
     /**
      * Application layer must be framework-agnostic - no validation annotations
@@ -181,6 +183,7 @@ public class HexagonalArchitectureTest {
                     "org.springframework.stereotype..",
                     "org.springframework.beans.factory.annotation..", // Added for @Autowired
                     "com.fasterxml.jackson..",
+                    "tools.jackson..",
                     "io.micrometer.core.instrument..",
                     "reactor.core..",
                     "reactor.util..",
