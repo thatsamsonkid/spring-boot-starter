@@ -116,6 +116,8 @@ class HelperTests(unittest.TestCase):
         self.assertEqual(pairs["io.unbyte.sandbox"], "com.acme.orders")
         self.assertEqual(pairs["sandbox-service"], "orders-service")
         self.assertEqual(pairs["SandboxApplication"], "OrdersApplication")
+        self.assertEqual(pairs['put("service", "sandbox")'], 'put("service", "orders")')
+        self.assertEqual(pairs["Sandbox application"], "Orders application")
         self.assertNotIn("sandbox", pairs)
 
     def test_rewrite_pom_keeps_parent_coordinates(self) -> None:
@@ -174,6 +176,10 @@ class FixtureConfiguratorTests(unittest.TestCase):
             self.temp / "src/main/resources/application.yml",
             "spring:\n  application:\n    name: sandbox-service\nserver:\n  port: 8080\n",
         )
+        write(
+            self.temp / ".cursor/environment.json",
+            json.dumps({"name": "sandbox-service", "ports": [8080]}, indent=2) + "\n",
+        )
         write(self.temp / "HEXAGONAL_ARCHITECTURE.md", "# Hexagonal\n")
         write(self.temp / "API_ENDPOINTS.md", "# API\n")
         config = {
@@ -190,6 +196,8 @@ class FixtureConfiguratorTests(unittest.TestCase):
 
     def test_detect_identity(self) -> None:
         identity = detect_identity(self.temp)
+        self.assertEqual(identity.group_id, "io.unbyte")
+        self.assertEqual(identity.artifact_id, "sandbox")
         self.assertEqual(identity.package, "io.unbyte.sandbox")
         self.assertEqual(identity.application_class, "SandboxApplication")
         self.assertEqual(identity.service_name, "sandbox-service")
@@ -237,6 +245,9 @@ class FixtureConfiguratorTests(unittest.TestCase):
         yml = (self.temp / "src/main/resources/application.yml").read_text(encoding="utf-8")
         self.assertIn("name: orders-service", yml)
         self.assertIn("port: 9090", yml)
+        env = json.loads((self.temp / ".cursor/environment.json").read_text(encoding="utf-8"))
+        self.assertEqual(env["name"], "orders-service")
+        self.assertEqual(env["ports"], [9090])
 
     def test_sample_and_docs_can_be_removed(self) -> None:
         current = detect_identity(self.temp)

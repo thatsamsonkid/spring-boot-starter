@@ -164,9 +164,7 @@ public class SampleController {
                         .map(
                                 posts -> {
                                     List<PostResponseDto> postDtos =
-                                            posts.stream()
-                                                    .map(postMapper::toResponseDto)
-                                                    .toList();
+                                            posts.stream().map(postMapper::toResponseDto).toList();
 
                                     PostsResponseDto.DataDto data =
                                             new PostsResponseDto.DataDto(postDtos);

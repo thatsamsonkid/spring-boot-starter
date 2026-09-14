@@ -148,12 +148,19 @@ def _first_pom_match(text: str, field: str) -> str | None:
     return match.group(2) if match else None
 
 
+def _project_pom_section(pom: str) -> str:
+    """Return the project coordinate block, skipping the parent POM."""
+    parts = re.split(r"</parent>", pom, maxsplit=1)
+    return parts[1] if len(parts) == 2 else pom
+
+
 def detect_identity(root: Path) -> Identity:
     pom = (root / "pom.xml").read_text(encoding="utf-8")
-    group_id = _first_pom_match(pom, "groupId")
-    artifact_id = _first_pom_match(pom, "artifactId")
-    name = _first_pom_match(pom, "name") or artifact_id
-    description = _first_pom_match(pom, "description") or ""
+    project = _project_pom_section(pom)
+    group_id = _first_pom_match(project, "groupId")
+    artifact_id = _first_pom_match(project, "artifactId")
+    name = _first_pom_match(project, "name") or artifact_id
+    description = _first_pom_match(project, "description") or ""
     if not group_id or not artifact_id:
         raise ValueError("pom.xml is missing groupId or artifactId")
 
@@ -332,8 +339,11 @@ def replacement_pairs(current: Identity, new: Identity) -> list[tuple[str, str]]
         (f"{current.artifact_id}.errors", f"{new.artifact_id}.errors"),
         (f"{current.artifact_id}.endpoints", f"{new.artifact_id}.endpoints"),
         (f'tag("service", "{current.artifact_id}")', f'tag("service", "{new.artifact_id}")'),
+        (f'put("service", "{current.artifact_id}")', f'put("service", "{new.app_name}")'),
         (f"for service: {current.artifact_id}", f"for service: {new.artifact_id}"),
         (f'timestamp, "{current.artifact_id}", version', f'timestamp, "{new.app_name}", version'),
+        (f'timestamp, "{current.artifact_id}")', f'timestamp, "{new.app_name}")'),
+        (f"{current.display_title} application", f"{new.display_title} application"),
     ]
     return [(old, new_value) for old, new_value in pairs if old != new_value]
 
@@ -400,6 +410,8 @@ def rewrite_application_files(root: Path, current: Identity, new: Identity) -> N
     if env_file.exists():
         data = json.loads(env_file.read_text(encoding="utf-8"))
         data["name"] = new.service_name
+        if new.server_port:
+            data["ports"] = [new.server_port]
         env_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
