@@ -1,0 +1,1 @@
+# Makes the configurator importable as scripts.configure_project.

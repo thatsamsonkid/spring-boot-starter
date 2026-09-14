@@ -1,0 +1,92 @@
+{
+  "questions": [
+    {
+      "id": "appName",
+      "prompt": "Application name (used for the Spring app name and class prefix)",
+      "type": "string"
+    },
+    {
+      "id": "artifactId",
+      "prompt": "Maven artifactId",
+      "type": "string"
+    },
+    {
+      "id": "groupId",
+      "prompt": "Maven groupId",
+      "type": "string"
+    },
+    {
+      "id": "packageName",
+      "prompt": "Java base package",
+      "type": "string"
+    },
+    {
+      "id": "description",
+      "prompt": "Project description",
+      "type": "string"
+    },
+    {
+      "id": "serverPort",
+      "prompt": "Server port",
+      "type": "int"
+    },
+    {
+      "id": "includeSampleCode",
+      "prompt": "Include sample hello/posts/error endpoints?",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "id": "includeArchitectureDocs",
+      "prompt": "Keep the architecture write-ups in the repo root?",
+      "type": "boolean",
+      "default": true
+    }
+  ],
+  "sampleFiles": [
+    "src/main/java/{package_path}/application/usecase/ProcessHelloRequestUseCase.java",
+    "src/main/java/{package_path}/application/usecase/FetchPostsUseCase.java",
+    "src/main/java/{package_path}/application/usecase/TestErrorUseCase.java",
+    "src/main/java/{package_path}/application/command/ProcessHelloCommand.java",
+    "src/main/java/{package_path}/application/command/FetchPostsCommand.java",
+    "src/main/java/{package_path}/application/command/TestErrorCommand.java",
+    "src/main/java/{package_path}/application/command/CreateCommand.java",
+    "src/main/java/{package_path}/application/query/GetByIdQuery.java",
+    "src/main/java/{package_path}/application/port/ExternalApiPort.java",
+    "src/main/java/{package_path}/domain/model/Post.java",
+    "src/main/java/{package_path}/domain/model/Comment.java",
+    "src/main/java/{package_path}/infrastructure/config/SampleApplicationConfig.java",
+    "src/main/java/{package_path}/infrastructure/web/controller/SampleController.java",
+    "src/main/java/{package_path}/infrastructure/web/request/HelloRequest.java",
+    "src/main/java/{package_path}/infrastructure/web/request/PostsRequestDto.java",
+    "src/main/java/{package_path}/infrastructure/web/request/PostRequestDto.java",
+    "src/main/java/{package_path}/infrastructure/web/request/CreateRequest.java",
+    "src/main/java/{package_path}/infrastructure/web/request/RequestItemRecord.java",
+    "src/main/java/{package_path}/infrastructure/web/response/HelloResponse.java",
+    "src/main/java/{package_path}/infrastructure/web/response/PostsResponseDto.java",
+    "src/main/java/{package_path}/infrastructure/web/response/PostResponseDto.java",
+    "src/main/java/{package_path}/infrastructure/web/response/CommentResponseDto.java",
+    "src/main/java/{package_path}/infrastructure/web/response/ExternalCommentDto.java",
+    "src/main/java/{package_path}/infrastructure/web/response/Response.java",
+    "src/main/java/{package_path}/infrastructure/web/WebDto.java",
+    "src/main/java/{package_path}/infrastructure/web/mapper/PostMapper.java",
+    "src/main/java/{package_path}/infrastructure/web/mapper/CommentMapper.java",
+    "src/main/java/{package_path}/infrastructure/web/adapter/ExternalApiAdapter.java",
+    "src/main/java/{package_path}/infrastructure/web/usecase/ReactiveFetchPostsUseCase.java",
+    "src/test/java/{package_path}/infrastructure/web/controller/SampleControllerTest.java",
+    "src/test/java/{package_path}/infrastructure/web/controller/ErrorHandlingTest.java",
+    "src/test/java/{package_path}/infrastructure/web/controller/MetricsCollectionTest.java",
+    "API_ENDPOINTS.md"
+  ],
+  "architectureDocs": [
+    "ARCHITECTURE_IMPROVEMENTS.md",
+    "ARCHITECTURE_TESTS.md",
+    "CLEAN_ARCHITECTURE_FIX.md",
+    "ERROR_HANDLING_DOCUMENTATION.md",
+    "FRAMEWORK_AGNOSTIC_ENFORCEMENT.md",
+    "HEXAGONAL_ARCHITECTURE.md",
+    "REACTIVE_CONTEXT_PROPAGATION.md",
+    "RECORDS_MIGRATION_GUIDE.md",
+    "SERVICE_MONITORING.md"
+  ]
+}
