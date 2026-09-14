@@ -1,0 +1,11 @@
+{
+  "name": "sandbox-service",
+  "install": "./mvnw -B -ntp clean package -Dmaven.test.skip=true",
+  "terminals": [
+    {
+      "name": "app",
+      "command": "./mvnw -B -ntp spring-boot:run -Dmaven.test.skip=true"
+    }
+  ],
+  "ports": [8080]
+}
