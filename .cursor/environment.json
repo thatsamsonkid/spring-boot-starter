@@ -1,10 +1,10 @@
 {
   "name": "sandbox-service",
-  "install": "./mvnw -B -ntp clean package -Dmaven.test.skip=true",
+  "install": "./scripts/cloud-agent-install.sh",
   "terminals": [
     {
       "name": "app",
-      "command": "./mvnw -B -ntp spring-boot:run -Dmaven.test.skip=true"
+      "command": "export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64; export PATH=\"$JAVA_HOME/bin:$PATH\"; ./mvnw -B -ntp spring-boot:run -Dmaven.test.skip=true"
     }
   ],
   "ports": [8080]
