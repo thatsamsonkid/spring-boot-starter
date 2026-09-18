@@ -21,7 +21,7 @@
     {
       "label": "env: create local files from examples",
       "type": "shell",
-      "command": "cp -n .env.example .env; cp -n .env.secrets.example .env.secrets",
+      "command": "[ -f .env ] || cp .env.example .env; [ -f .env.secrets ] || cp .env.secrets.example .env.secrets",
       "windows": {
         "command": "if not exist .env copy .env.example .env & if not exist .env.secrets copy .env.secrets.example .env.secrets"
       },
@@ -106,6 +106,7 @@
       // Regular (non-secret) env via options.env.
       // Secret from the host environment: export SANDBOX_API_TOKEN before launching VS Code,
       // or use "maven: spring-boot:run (prompt for secrets)".
+      // maven.test.skip skips test-compile; spring-boot:run binds that phase by default.
       "label": "maven: spring-boot:run",
       "type": "shell",
       "command": "${workspaceFolder}/mvnw",
@@ -116,6 +117,7 @@
         "-f",
         "${workspaceFolder}/pom.xml",
         "spring-boot:run",
+        "-Dmaven.test.skip=true",
         "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m -XX:+UseG1GC -Dfile.encoding=UTF-8"
       ],
       "options": {
@@ -145,6 +147,7 @@
         "-f",
         "${workspaceFolder}/pom.xml",
         "spring-boot:run",
+        "-Dmaven.test.skip=true",
         "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m -Dfile.encoding=UTF-8"
       ],
       "options": {
@@ -166,7 +169,7 @@
       // Unix/macOS. On Windows use the host-env or prompt-for-secrets tasks instead.
       "label": "maven: spring-boot:run (env files)",
       "type": "shell",
-      "command": "set -a; [ -f .env ] && . ./.env; [ -f .env.secrets ] && . ./.env.secrets; set +a; \"${workspaceFolder}/mvnw\" -f \"${workspaceFolder}/pom.xml\" spring-boot:run -Dspring-boot.run.jvmArguments='-Xms256m -Xmx512m -Dfile.encoding=UTF-8'",
+      "command": "set -a; [ -f .env ] && . ./.env; [ -f .env.secrets ] && . ./.env.secrets; set +a; \"${workspaceFolder}/mvnw\" -f \"${workspaceFolder}/pom.xml\" spring-boot:run -Dmaven.test.skip=true -Dspring-boot.run.jvmArguments='-Xms256m -Xmx512m -Dfile.encoding=UTF-8'",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -196,6 +199,7 @@
         "-f",
         "${workspaceFolder}/pom.xml",
         "spring-boot:run",
+        "-Dmaven.test.skip=true",
         "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Xms256m -Xmx512m -Dspring.devtools.restart.enabled=false -Dfile.encoding=UTF-8"
       ],
       "options": {
