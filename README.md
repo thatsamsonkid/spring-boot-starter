@@ -62,3 +62,12 @@ rewriting the script.
 ./mvnw test
 python3 -m unittest scripts.test_configure_project
 ```
+
+OpenAPI schema and Swagger UI are generated at runtime by
+[springdoc-openapi](https://springdoc.org/):
+
+```
+http://localhost:8080/v3/api-docs
+http://localhost:8080/v3/api-docs.yaml
+http://localhost:8080/swagger-ui.html
+```

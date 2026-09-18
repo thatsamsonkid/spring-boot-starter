@@ -125,6 +125,19 @@ static final ArchRule applicationShouldNotDependOnMapStruct = ArchRuleDefinition
 
 **Purpose**: Prevents mapping framework dependencies in application layer.
 
+### **10. OpenAPI / Swagger Prevention**
+
+```java
+@ArchTest
+static final ArchRule applicationShouldNotDependOnOpenApi = ArchRuleDefinition.noClasses()
+        .that().resideInAPackage(APPLICATION)
+        .should().dependOnClassesThat().resideInAnyPackage(
+                "io.swagger.v3..",
+                "org.springdoc..");
+```
+
+**Purpose**: Keeps springdoc-openapi and Swagger annotations in the web layer.
+
 ## 🏗️ **Architecture Layers**
 
 ### **✅ Application Layer (Framework-Agnostic)**

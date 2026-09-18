@@ -45,3 +45,18 @@ logging:
 # Server configuration
 server:
   port: 8080
+
+# OpenAPI / Swagger UI (springdoc-openapi)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  paths-to-match: /api/**
+  writer-with-default-pretty-printer: true
+  show-actuator: false

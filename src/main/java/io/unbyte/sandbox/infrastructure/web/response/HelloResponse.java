@@ -1,16 +1,21 @@
 package io.unbyte.sandbox.infrastructure.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Response DTO for /hello endpoint using Java Record
  *
  * Records work perfectly with Jackson annotations
  */
+@Schema(description = "Hello endpoint response")
 public record HelloResponse(
-        @JsonProperty("message") String message,
-        @JsonProperty("timestamp") String timestamp,
-        @JsonProperty("service") String service) {
+        @JsonProperty("message") @Schema(description = "Greeting including processed IDs")
+                String message,
+        @JsonProperty("timestamp") @Schema(description = "Response timestamp in ISO-8601 format")
+                String timestamp,
+        @JsonProperty("service") @Schema(description = "Service name", example = "sandbox-service")
+                String service) {
 
     /**
      * Compact constructor for validation

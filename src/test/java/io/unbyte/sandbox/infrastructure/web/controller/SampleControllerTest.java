@@ -46,4 +46,27 @@ class SampleControllerTest {
                             assert response.timestamp() != null;
                         });
     }
+
+    @Test
+    void openApiSpec_shouldIncludeSampleEndpoints() {
+        webTestClient
+                .get()
+                .uri("/v3/api-docs")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.paths['/api/v1/hello'].post.summary")
+                .isEqualTo("Process hello request")
+                .jsonPath("$.paths['/api/v1/posts'].post.summary")
+                .isEqualTo("Fetch posts with comments")
+                .jsonPath("$.paths['/api/v1/test-error'].get.summary")
+                .isEqualTo("Trigger a sample error")
+                .jsonPath("$.components.schemas.HelloRequest")
+                .exists()
+                .jsonPath("$.components.schemas.HelloResponse")
+                .exists()
+                .jsonPath("$.components.schemas.PostsRequestDto")
+                .exists();
+    }
 }

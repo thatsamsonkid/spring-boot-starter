@@ -1,5 +1,8 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.unbyte.sandbox.application.command.FetchPostsCommand;
 import io.unbyte.sandbox.application.command.ProcessHelloCommand;
 import io.unbyte.sandbox.application.command.TestErrorCommand;
@@ -35,6 +38,7 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "Sample", description = "Optional sample APIs included with the starter")
 public class SampleController {
 
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
@@ -63,6 +67,9 @@ public class SampleController {
      * @param request the request containing items with IDs
      * @return Mono<HelloResponse> with greeting message and processed IDs
      */
+    @Operation(
+            summary = "Process hello request",
+            description = "Accepts request items and returns a greeting with processed IDs")
     @PostMapping(
             value = "/hello",
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -103,8 +110,14 @@ public class SampleController {
      * @param errorType the type of error to simulate
      * @return Mono<HelloResponse> or throws exception
      */
+    @Operation(
+            summary = "Trigger a sample error",
+            description = "Simulates an error of the requested type for handler testing")
     @GetMapping(value = "/test-error", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<HelloResponse> testError(@RequestParam String errorType) {
+    public Mono<HelloResponse> testError(
+            @Parameter(description = "Error type to simulate", example = "domain_validation")
+                    @RequestParam
+                    String errorType) {
         return performanceMonitoringService.monitorOperation(
                 "test_error_endpoint",
                 Mono.fromCallable(
@@ -128,6 +141,9 @@ public class SampleController {
      * @param request the request containing post IDs
      * @return Mono<PostsResponseDto> with posts and their comments
      */
+    @Operation(
+            summary = "Fetch posts with comments",
+            description = "Loads posts and their comments from the external sample API")
     @PostMapping(
             value = "/posts",
             consumes = MediaType.APPLICATION_JSON_VALUE,
