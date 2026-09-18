@@ -7,5 +7,10 @@
       "command": "export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64; export PATH=\"$JAVA_HOME/bin:$PATH\"; ./mvnw -B -ntp spring-boot:run -Dmaven.test.skip=true"
     }
   ],
-  "ports": [8080]
+  "ports": [
+    {
+      "name": "app",
+      "port": 8080
+    }
+  ]
 }
