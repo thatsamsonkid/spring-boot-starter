@@ -1,0 +1,31 @@
+{
+  // Workspace defaults for the Java extension pack.
+  // Launch-specific vmArgs / env still belong in launch.json so each debug
+  // session can differ. These settings apply to CodeLens Run/Debug and tests.
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.debug.settings.console": "integratedTerminal",
+  "java.debug.settings.forceBuildBeforeLaunch": true,
+  "java.debug.settings.hotCodeReplace": "auto",
+  "java.debug.settings.vmArgs": "-Xms256m -Xmx512m -XX:+UseG1GC -Dfile.encoding=UTF-8",
+  "java.test.config": {
+    "name": "sandbox-tests",
+    "workingDirectory": "${workspaceFolder}",
+    "vmArgs": [
+      "-Xms256m",
+      "-Xmx512m",
+      "-ea"
+    ],
+    "env": {
+      "SPRING_PROFILES_ACTIVE": "test",
+      "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "INFO"
+    }
+  },
+  "maven.executable.preferMavenWrapper": true,
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  }
+}

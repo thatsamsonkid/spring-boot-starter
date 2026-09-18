@@ -1,0 +1,230 @@
+{
+  // VS Code debug configurations for sandbox-service (Spring Boot WebFlux).
+  //
+  // How values are passed into the JVM / Spring Boot:
+  //   vmArgs  -> JVM flags and -D system properties (System.getProperty / Spring)
+  //   env     -> process environment (System.getenv / Spring relaxed binding)
+  //   envFile -> KEY=value files merged into the process environment
+  //
+  // Secret handling (never put real secret values in this committed file):
+  //   1. envFile pointing at a gitignored file (.env.secrets)     <- preferred for local work
+  //   2. ${env:NAME} inherited from the OS / shell / CI secrets   <- preferred for CI and shared machines
+  //   3. ${input:id} promptString with "password": true           <- one-off debug sessions
+  //
+  // Copy the example secret file once: Run Task "env: create local files from examples"
+  //
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "sandboxApiToken",
+      "type": "promptString",
+      "description": "SANDBOX_API_TOKEN (typed here, not written to disk or git)",
+      "password": true
+    },
+    {
+      "id": "springProfile",
+      "type": "pickString",
+      "description": "Spring profile to activate",
+      "options": ["local", "dev", "test"],
+      "default": "local"
+    }
+  ],
+  "configurations": [
+    {
+      // Daily driver: F5. Regular env lives here; secrets come from a gitignored file.
+      "type": "java",
+      "name": "Sandbox: Debug",
+      "request": "launch",
+      "mainClass": "io.unbyte.sandbox.SandboxApplication",
+      "projectName": "sandbox",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "shortenCommandLine": "auto",
+      "vmArgs": [
+        "-Xms256m",
+        "-Xmx512m",
+        "-XX:+UseG1GC",
+        "-XX:+HeapDumpOnOutOfMemoryError",
+        "-XX:HeapDumpPath=${workspaceFolder}/target",
+        "-Dfile.encoding=UTF-8",
+        // DevTools restart replaces the JVM and drops the debug session.
+        "-Dspring.devtools.restart.enabled=false"
+      ],
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "local",
+        "SERVER_PORT": "8080",
+        "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "DEBUG",
+        "LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB": "INFO",
+        "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE": "health,info,metrics,prometheus",
+        "MANAGEMENT_METRICS_TAGS_ENVIRONMENT": "local"
+      },
+      // Later files override earlier files. Missing files are skipped by the Java debugger.
+      "envFile": [
+        "${workspaceFolder}/.env",
+        "${workspaceFolder}/.env.secrets"
+      ],
+      "presentation": {
+        "group": "sandbox",
+        "order": 1
+      }
+    },
+    {
+      // Same as Debug, but you pick the Spring profile when the session starts.
+      "type": "java",
+      "name": "Sandbox: Debug (pick profile)",
+      "request": "launch",
+      "mainClass": "io.unbyte.sandbox.SandboxApplication",
+      "projectName": "sandbox",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "shortenCommandLine": "auto",
+      "vmArgs": [
+        "-Xms256m",
+        "-Xmx512m",
+        "-XX:+UseG1GC",
+        "-Dfile.encoding=UTF-8",
+        "-Dspring.devtools.restart.enabled=false"
+      ],
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "${input:springProfile}",
+        "SERVER_PORT": "8080",
+        "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "DEBUG"
+      },
+      "envFile": [
+        "${workspaceFolder}/.env",
+        "${workspaceFolder}/.env.secrets"
+      ],
+      "presentation": {
+        "group": "sandbox",
+        "order": 2
+      }
+    },
+    {
+      // Secret is typed into a masked prompt. Nothing is stored in git or on disk.
+      "type": "java",
+      "name": "Sandbox: Debug (prompt for secrets)",
+      "request": "launch",
+      "mainClass": "io.unbyte.sandbox.SandboxApplication",
+      "projectName": "sandbox",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "shortenCommandLine": "auto",
+      "vmArgs": [
+        "-Xms256m",
+        "-Xmx512m",
+        "-Dfile.encoding=UTF-8",
+        "-Dspring.devtools.restart.enabled=false"
+      ],
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "local",
+        "SERVER_PORT": "8080",
+        "SANDBOX_API_TOKEN": "${input:sandboxApiToken}"
+      },
+      "presentation": {
+        "group": "sandbox",
+        "order": 3
+      }
+    },
+    {
+      // Secret is inherited from the environment VS Code itself was started with
+      // (shell profile, OS secret store, CI). ${env:NAME} does NOT read launch.json env
+      // or envFile values — only the host process environment.
+      "type": "java",
+      "name": "Sandbox: Debug (host environment secrets)",
+      "request": "launch",
+      "mainClass": "io.unbyte.sandbox.SandboxApplication",
+      "projectName": "sandbox",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "shortenCommandLine": "auto",
+      "vmArgs": [
+        "-Xms256m",
+        "-Xmx512m",
+        "-Dfile.encoding=UTF-8",
+        "-Dspring.devtools.restart.enabled=false"
+      ],
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "local",
+        "SERVER_PORT": "8080",
+        "SANDBOX_API_TOKEN": "${env:SANDBOX_API_TOKEN}"
+      },
+      "presentation": {
+        "group": "sandbox",
+        "order": 4
+      }
+    },
+    {
+      // Run from the debug view without attaching a debugger (noDebug).
+      "type": "java",
+      "name": "Sandbox: Run",
+      "request": "launch",
+      "mainClass": "io.unbyte.sandbox.SandboxApplication",
+      "projectName": "sandbox",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "noDebug": true,
+      "vmArgs": [
+        "-Xms256m",
+        "-Xmx512m",
+        "-XX:+UseG1GC",
+        "-Dfile.encoding=UTF-8"
+      ],
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "local",
+        "SERVER_PORT": "8080",
+        "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "DEBUG"
+      },
+      "envFile": [
+        "${workspaceFolder}/.env",
+        "${workspaceFolder}/.env.secrets"
+      ],
+      "presentation": {
+        "group": "sandbox",
+        "order": 5
+      }
+    },
+    {
+      // Attach to a JVM that was started with JDWP (see task "maven: spring-boot:run (JDWP)").
+      "type": "java",
+      "name": "Sandbox: Attach (localhost:5005)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "projectName": "sandbox",
+      "timeout": 30000,
+      "presentation": {
+        "group": "sandbox",
+        "order": 6
+      }
+    },
+    {
+      "type": "java",
+      "name": "Sandbox: Attach (pick process)",
+      "request": "attach",
+      "processId": "${command:PickJavaProcess}",
+      "projectName": "sandbox",
+      "presentation": {
+        "group": "sandbox",
+        "order": 7
+      }
+    }
+  ],
+  "compounds": [
+    {
+      // Starts the service with JDWP, waits until it is listening, then attaches.
+      "name": "Sandbox: Start with JDWP + Attach",
+      "configurations": ["Sandbox: Attach (localhost:5005)"],
+      "preLaunchTask": "maven: spring-boot:run (JDWP)",
+      "stopAll": true,
+      "presentation": {
+        "group": "sandbox",
+        "order": 8
+      }
+    }
+  ]
+}
