@@ -30,7 +30,19 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### Local environment files (never commit secrets) ###
+.env
+.env.local
+.env.*.local
+.env.secrets
+!.env.example
+!.env.secrets.example
 
 ### Configurator ###
 scripts/__pycache__/

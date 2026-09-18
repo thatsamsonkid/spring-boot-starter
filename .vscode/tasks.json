@@ -1,0 +1,232 @@
+{
+  // Build / run tasks for sandbox-service.
+  //
+  // Launch configs (F5) use the Java debugger and its env / envFile / vmArgs.
+  // These Maven tasks are for terminal runs, tests, and JDWP attach.
+  //
+  // Regular env: options.env
+  // Secrets:     ${env:NAME} from the host, ${input:} prompts, or a sourced gitignored file
+  // JVM args:    -Dspring-boot.run.jvmArguments=...  (Maven equivalent of launch.json vmArgs)
+  //
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "sandboxApiToken",
+      "type": "promptString",
+      "description": "SANDBOX_API_TOKEN (typed here, not written to disk or git)",
+      "password": true
+    }
+  ],
+  "tasks": [
+    {
+      "label": "env: create local files from examples",
+      "type": "shell",
+      "command": "[ -f .env ] || cp .env.example .env; [ -f .env.secrets ] || cp .env.secrets.example .env.secrets",
+      "windows": {
+        "command": "if not exist .env copy .env.example .env & if not exist .env.secrets copy .env.secrets.example .env.secrets"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "maven: compile",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": ["-f", "${workspaceFolder}/pom.xml", "compile"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "MAVEN_OPTS": "-Xms256m -Xmx512m"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "maven: test",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": ["-f", "${workspaceFolder}/pom.xml", "test"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "MAVEN_OPTS": "-Xms256m -Xmx512m",
+          "SPRING_PROFILES_ACTIVE": "test"
+        }
+      },
+      "group": "test",
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "maven: package",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": ["-f", "${workspaceFolder}/pom.xml", "package", "-DskipTests"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "MAVEN_OPTS": "-Xms256m -Xmx512m"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$javac"]
+    },
+    {
+      "label": "maven: clean",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": ["-f", "${workspaceFolder}/pom.xml", "clean"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      // Regular (non-secret) env via options.env.
+      // Secret from the host environment: export SANDBOX_API_TOKEN before launching VS Code,
+      // or use "maven: spring-boot:run (prompt for secrets)".
+      // maven.test.skip skips test-compile; spring-boot:run binds that phase by default.
+      "label": "maven: spring-boot:run",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": [
+        "-f",
+        "${workspaceFolder}/pom.xml",
+        "spring-boot:run",
+        "-Dmaven.test.skip=true",
+        "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m -XX:+UseG1GC -Dfile.encoding=UTF-8"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "SPRING_PROFILES_ACTIVE": "local",
+          "SERVER_PORT": "8080",
+          "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "DEBUG",
+          "SANDBOX_API_TOKEN": "${env:SANDBOX_API_TOKEN}"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      }
+    },
+    {
+      "label": "maven: spring-boot:run (prompt for secrets)",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": [
+        "-f",
+        "${workspaceFolder}/pom.xml",
+        "spring-boot:run",
+        "-Dmaven.test.skip=true",
+        "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m -Dfile.encoding=UTF-8"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "SPRING_PROFILES_ACTIVE": "local",
+          "SERVER_PORT": "8080",
+          "SANDBOX_API_TOKEN": "${input:sandboxApiToken}"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      // Loads gitignored .env / .env.secrets into the process, then starts Maven.
+      // Unix/macOS. On Windows use the host-env or prompt-for-secrets tasks instead.
+      "label": "maven: spring-boot:run (env files)",
+      "type": "shell",
+      "command": "set -a; [ -f .env ] && . ./.env; [ -f .env.secrets ] && . ./.env.secrets; set +a; \"${workspaceFolder}/mvnw\" -f \"${workspaceFolder}/pom.xml\" spring-boot:run -Dmaven.test.skip=true -Dspring-boot.run.jvmArguments='-Xms256m -Xmx512m -Dfile.encoding=UTF-8'",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "SPRING_PROFILES_ACTIVE": "local",
+          "SERVER_PORT": "8080"
+        }
+      },
+      "windows": {
+        "command": "echo This task sources .env files with bash. Use 'maven: spring-boot:run (prompt for secrets)' or set SANDBOX_API_TOKEN in the environment instead."
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      // Listen on JDWP 5005 without waiting (suspend=n). Pair with "Sandbox: Attach (localhost:5005)"
+      // or the compound "Sandbox: Start with JDWP + Attach".
+      "label": "maven: spring-boot:run (JDWP)",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}/mvnw.cmd"
+      },
+      "args": [
+        "-f",
+        "${workspaceFolder}/pom.xml",
+        "spring-boot:run",
+        "-Dmaven.test.skip=true",
+        "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Xms256m -Xmx512m -Dspring.devtools.restart.enabled=false -Dfile.encoding=UTF-8"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "SPRING_PROFILES_ACTIVE": "local",
+          "SERVER_PORT": "8080",
+          "LOGGING_LEVEL_IO_UNBYTE_SANDBOX": "DEBUG",
+          "SANDBOX_API_TOKEN": "${env:SANDBOX_API_TOKEN}"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "spring-boot-jdwp",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Listening for transport dt_socket|Started SandboxApplication)"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}
