@@ -1,12 +1,14 @@
 package io.unbyte.sandbox.infrastructure.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
  * Standardized error response for API endpoints
  */
+@Schema(description = "Standardized API error payload")
 public class ErrorResponse {
 
     @JsonProperty("error")
@@ -31,8 +33,10 @@ public class ErrorResponse {
         this.path = path;
     }
 
+    @Schema(description = "Error details")
     public static class ErrorDetails {
         @JsonProperty("code")
+        @Schema(description = "Stable error code", example = "DOMAIN_001")
         private String code;
 
         @JsonProperty("message")

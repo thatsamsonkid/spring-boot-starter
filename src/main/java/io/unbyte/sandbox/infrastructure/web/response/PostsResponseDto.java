@@ -1,13 +1,16 @@
 package io.unbyte.sandbox.infrastructure.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
  * Response DTO for multiple posts
  * Contains the final response structure
  */
-public record PostsResponseDto(@JsonProperty("data") DataDto data) {
+@Schema(description = "Posts fetch response")
+public record PostsResponseDto(
+        @JsonProperty("data") @Schema(description = "Response payload") DataDto data) {
 
     /**
      * Compact constructor for validation

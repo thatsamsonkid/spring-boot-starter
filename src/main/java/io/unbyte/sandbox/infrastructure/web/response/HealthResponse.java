@@ -1,15 +1,21 @@
 package io.unbyte.sandbox.infrastructure.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Response DTO for /health endpoint using Java Record
  */
+@Schema(description = "Service health status")
 public record HealthResponse(
-        @JsonProperty("status") String status,
-        @JsonProperty("timestamp") String timestamp,
-        @JsonProperty("service") String service,
-        @JsonProperty("version") String version) {
+        @JsonProperty("status") @Schema(description = "Health status", example = "UP")
+                String status,
+        @JsonProperty("timestamp") @Schema(description = "Response timestamp in ISO-8601 format")
+                String timestamp,
+        @JsonProperty("service") @Schema(description = "Service name", example = "sandbox-service")
+                String service,
+        @JsonProperty("version") @Schema(description = "Service version", example = "1.0.0")
+                String version) {
 
     /**
      * Compact constructor for validation

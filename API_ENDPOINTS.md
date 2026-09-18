@@ -2,6 +2,15 @@
 
 This document describes the available REST API endpoints for the Sandbox service.
 
+Generated OpenAPI docs (schema + Swagger UI) are also available while the app is
+running:
+
+```
+http://localhost:8080/v3/api-docs
+http://localhost:8080/v3/api-docs.yaml
+http://localhost:8080/swagger-ui.html
+```
+
 ## Base URL
 
 ```

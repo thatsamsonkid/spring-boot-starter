@@ -66,7 +66,9 @@ public class HexagonalArchitectureTest {
                             "com.fasterxml.jackson..",
                             "tools.jackson..",
                             "jakarta.validation..",
-                            "org.hibernate..");
+                            "org.hibernate..",
+                            "io.swagger.v3..",
+                            "org.springdoc..");
 
     /**
      * Domain layer should not have Spring annotations
@@ -220,6 +222,18 @@ public class HexagonalArchitectureTest {
                     .resideInAnyPackage("org.mapstruct..");
 
     /**
+     * Application layer must be framework-agnostic - no OpenAPI/Swagger
+     */
+    @ArchTest
+    static final ArchRule applicationShouldNotDependOnOpenApi =
+            ArchRuleDefinition.noClasses()
+                    .that()
+                    .resideInAPackage(APPLICATION)
+                    .should()
+                    .dependOnClassesThat()
+                    .resideInAnyPackage("io.swagger.v3..", "org.springdoc..");
+
+    /**
      * Controllers may only depend on application + domain + shared (not persistence/entities directly)
      */
     @ArchTest
@@ -244,6 +258,9 @@ public class HexagonalArchitectureTest {
                             "com.fasterxml.jackson..",
                             "tools.jackson..",
                             "io.micrometer.core.instrument..",
+                            "io.swagger.v3.oas.annotations..",
+                            "io.swagger.v3.oas.models..",
+                            "org.springdoc..",
                             "reactor.core..",
                             "reactor.util..",
                             "org.reactivestreams..",

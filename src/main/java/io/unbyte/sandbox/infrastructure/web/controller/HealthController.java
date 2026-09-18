@@ -1,5 +1,7 @@
 package io.unbyte.sandbox.infrastructure.web.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.unbyte.sandbox.application.usecase.GetHealthStatusUseCase;
 import io.unbyte.sandbox.infrastructure.web.response.HealthResponse;
 import io.unbyte.sandbox.infrastructure.web.service.PerformanceMonitoringService;
@@ -17,6 +19,7 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "Health", description = "Service health checks")
 public class HealthController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthController.class);
@@ -35,6 +38,9 @@ public class HealthController {
      * Health check endpoint - returns service health status
      * @return Mono<HealthResponse> with service health information
      */
+    @Operation(
+            summary = "Get service health",
+            description = "Returns the current health status of the service")
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<HealthResponse> health() {
         return performanceMonitoringService.monitorOperation(
