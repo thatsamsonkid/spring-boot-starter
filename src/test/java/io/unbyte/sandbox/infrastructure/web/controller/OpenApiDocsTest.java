@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 class OpenApiDocsTest {
 
     @Autowired private WebTestClient webTestClient;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     @Test
     void apiDocs_shouldExposeOpenApiSchemaForHealth() {
@@ -28,7 +32,7 @@ class OpenApiDocsTest {
                 .jsonPath("$.openapi")
                 .value(version -> assertTrue(((String) version).startsWith("3.")))
                 .jsonPath("$.info.title")
-                .isEqualTo("sandbox-service API")
+                .isEqualTo(applicationName + " API")
                 .jsonPath("$.paths['/api/v1/health']")
                 .exists()
                 .jsonPath("$.paths['/api/v1/health'].get.summary")
